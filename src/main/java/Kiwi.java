@@ -24,6 +24,8 @@ public class Kiwi {
                 listTasks();
             } else if (input.startsWith("mark")) {
                 markDone(Integer.parseInt(input.split(" ")[1]) - 1);
+            } else if (input.startsWith("unmark")) {
+                markUndone(Integer.parseInt(input.split(" ")[1]) - 1);
             } else {
                 addTask(input);
             }
@@ -82,4 +84,9 @@ public class Kiwi {
         System.out.println((index + 1) + ". [X] " + tasks[index]);
     }
 
+    private static void markUndone(int index) {
+        taskDone[index] = false;
+        System.out.println("Marked this task as not done yet:");
+        System.out.println((index + 1) + ". [ ] " + tasks[index]);
+    }
 }

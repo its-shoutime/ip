@@ -9,6 +9,7 @@ runs each test case against the program, shows the console session, and
 - **Main class:** `Kiwi`
 - **Source directory:** `src/main/java`
 - **Java version:** `25`
+- **Task storage:** `ArrayList<Task>` (dynamic size; add/delete via list operations)
 - **How tests are run:** compile all `*.java` in the source directory, then for each test case pipe **Inputs** to the program's stdin and compare full stdout to **Expected output**.
 
 Suggested command (used by the skill runner):

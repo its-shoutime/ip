@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -6,7 +7,6 @@ import java.util.Scanner;
  */
 public class Kiwi {
     private static final String LINE = "____________________________________________________________";
-    private static final int MAX_TASKS = 100;
 
     private static final String BANNER = " _  ___          _ \n"
             + "| |/ (_)_      _(_)\n"
@@ -14,8 +14,8 @@ public class Kiwi {
             + "| . \\| |\\ V  V /| |\n"
             + "|_|\\_\\_| \\_/\\_/ |_|\n";
 
-    private static final Task[] tasks = new Task[MAX_TASKS];
-    private static int taskCount = 0;
+    /** Dynamically sized list of tasks (grows/shrinks as the user adds or deletes). */
+    private static final ArrayList<Task> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
@@ -85,7 +85,7 @@ public class Kiwi {
     }
 
     /**
-     * Adds a to-do if the description is present and there is list space.
+     * Adds a to-do if the description is present.
      *
      * @param description task description after the {@code todo} command
      * @throws KiwiException if the description is empty
@@ -144,26 +144,21 @@ public class Kiwi {
      * Stores a task and prints the standard "Got it" confirmation.
      *
      * @param task task to add
-     * @throws KiwiException if the list is already full
      */
-    private static void addTask(Task task) throws KiwiException {
-        if (taskCount >= MAX_TASKS) {
-            throw new KiwiException("Your task list is full (max " + MAX_TASKS + ").");
-        }
-        tasks[taskCount] = task;
-        taskCount++;
+    private static void addTask(Task task) {
+        tasks.add(task);
         System.out.println("Got it. I've added this task:");
         System.out.println("  " + task);
-        System.out.println("Now you have " + taskCount + " task"
-                + (taskCount == 1 ? "" : "s") + " in the list.");
+        System.out.println("Now you have " + tasks.size() + " task"
+                + (tasks.size() == 1 ? "" : "s") + " in the list.");
     }
 
     /** Prints all stored tasks with 1-based numbering. */
     private static void listTasks() {
         System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
+        for (int i = 0; i < tasks.size(); i++) {
             // Match the project example: "1.[T][ ] ..."
-            System.out.println((i + 1) + "." + tasks[i]);
+            System.out.println((i + 1) + "." + tasks.get(i));
         }
     }
 
@@ -186,39 +181,36 @@ public class Kiwi {
         } catch (NumberFormatException e) {
             throw new KiwiException("That task number doesn't look like a number: " + parts[1]);
         }
-        if (index < 0 || index >= taskCount) {
+        if (index < 0 || index >= tasks.size()) {
             throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
         }
         return index;
     }
 
     private static void markDone(int index) {
-        tasks[index].markAsDone();
+        Task task = tasks.get(index);
+        task.markAsDone();
         System.out.println("Marked this task as done:");
-        System.out.println((index + 1) + "." + tasks[index]);
+        System.out.println((index + 1) + "." + task);
     }
 
     private static void markUndone(int index) {
-        tasks[index].markAsNotDone();
+        Task task = tasks.get(index);
+        task.markAsNotDone();
         System.out.println("Marked this task as not done yet:");
-        System.out.println((index + 1) + "." + tasks[index]);
+        System.out.println((index + 1) + "." + task);
     }
 
     /**
-     * Removes the task at the given index and shifts later tasks down.
+     * Removes the task at the given index ({@link ArrayList#remove(int)} shifts later items).
      *
      * @param index 0-based position of the task to remove
      */
     private static void deleteTask(int index) {
-        Task removed = tasks[index];
-        for (int i = index; i < taskCount - 1; i++) {
-            tasks[i] = tasks[i + 1];
-        }
-        taskCount--;
-        tasks[taskCount] = null; // clear the leftover reference
+        Task removed = tasks.remove(index);
         System.out.println("Noted. I've removed this task:");
         System.out.println("  " + removed);
-        System.out.println("Now you have " + taskCount + " task"
-                + (taskCount == 1 ? "" : "s") + " in the list.");
+        System.out.println("Now you have " + tasks.size() + " task"
+                + (tasks.size() == 1 ? "" : "s") + " in the list.");
     }
 }

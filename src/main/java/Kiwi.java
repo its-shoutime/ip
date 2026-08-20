@@ -24,26 +24,41 @@ public class Kiwi {
         String input = in.nextLine();
         while (!input.equals("bye")) {
             printLine();
-            if (input.equals("list")) {
-                listTasks();
-            } else if (input.startsWith("mark ")) {
-                markDone(Integer.parseInt(input.split(" ")[1]) - 1);
-            } else if (input.startsWith("unmark ")) {
-                markUndone(Integer.parseInt(input.split(" ")[1]) - 1);
-            } else if (input.startsWith("todo ")) {
-                addTodo(input.substring("todo ".length()).trim());
-            } else if (input.startsWith("deadline ")) {
-                addDeadline(input.substring("deadline ".length()).trim());
-            } else if (input.startsWith("event ")) {
-                addEvent(input.substring("event ".length()).trim());
-            } else {
-                System.out.println("I don't understand that command.");
+            try {
+                handleCommand(input);
+            } catch (KiwiException e) {
+                System.out.println(e.getMessage());
             }
             printLine();
             input = in.nextLine();
         }
 
         showGoodbye();
+    }
+
+    /**
+     * Runs one user command, or throws {@link KiwiException} for bad input.
+     *
+     * @param input full line typed by the user
+     * @throws KiwiException if the command is unknown or incomplete
+     */
+    private static void handleCommand(String input) throws KiwiException {
+        if (input.equals("list")) {
+            listTasks();
+        } else if (input.equals("todo") || input.startsWith("todo ")) {
+            addTodo(input.equals("todo") ? "" : input.substring("todo ".length()).trim());
+        } else if (input.equals("deadline") || input.startsWith("deadline ")) {
+            addDeadline(input.equals("deadline") ? "" : input.substring("deadline ".length()).trim());
+        } else if (input.equals("event") || input.startsWith("event ")) {
+            addEvent(input.equals("event") ? "" : input.substring("event ".length()).trim());
+        } else if (input.equals("mark") || input.startsWith("mark ")) {
+            markDone(parseTaskNumber(input, "mark"));
+        } else if (input.equals("unmark") || input.startsWith("unmark ")) {
+            markUndone(parseTaskNumber(input, "unmark"));
+        } else {
+            throw new KiwiException(
+                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, or bye.");
+        }
     }
 
     /** Prints the horizontal divider used between chatbot messages. */
@@ -68,11 +83,15 @@ public class Kiwi {
     }
 
     /**
-     * Adds a to-do if there is still space in the list.
+     * Adds a to-do if the description is present and there is list space.
      *
      * @param description task description after the {@code todo} command
+     * @throws KiwiException if the description is empty
      */
-    private static void addTodo(String description) {
+    private static void addTodo(String description) throws KiwiException {
+        if (description.isEmpty()) {
+            throw new KiwiException("A todo needs a description — try: todo borrow book");
+        }
         addTask(new Todo(description));
     }
 
@@ -80,12 +99,17 @@ public class Kiwi {
      * Parses {@code description /by time} and adds a deadline task.
      *
      * @param body text after the {@code deadline} command
+     * @throws KiwiException if the description or {@code /by} part is missing
      */
-    private static void addDeadline(String body) {
+    private static void addDeadline(String body) throws KiwiException {
+        if (body.isEmpty()) {
+            throw new KiwiException(
+                    "A deadline needs details — try: deadline return book /by Sunday");
+        }
         String[] parts = body.split(" /by ", 2);
-        if (parts.length < 2) {
-            System.out.println("Please use: deadline <description> /by <when>");
-            return;
+        if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+            throw new KiwiException(
+                    "Deadlines need both a description and /by <when> — e.g. deadline return book /by Sunday");
         }
         addTask(new Deadline(parts[0].trim(), parts[1].trim()));
     }
@@ -94,17 +118,22 @@ public class Kiwi {
      * Parses {@code description /from start /to end} and adds an event task.
      *
      * @param body text after the {@code event} command
+     * @throws KiwiException if description, {@code /from}, or {@code /to} is missing
      */
-    private static void addEvent(String body) {
+    private static void addEvent(String body) throws KiwiException {
+        if (body.isEmpty()) {
+            throw new KiwiException(
+                    "An event needs details — try: event meeting /from Mon 2pm /to 4pm");
+        }
         String[] fromSplit = body.split(" /from ", 2);
-        if (fromSplit.length < 2) {
-            System.out.println("Please use: event <description> /from <start> /to <end>");
-            return;
+        if (fromSplit.length < 2 || fromSplit[0].trim().isEmpty()) {
+            throw new KiwiException(
+                    "Events need /from and /to — e.g. event meeting /from Mon 2pm /to 4pm");
         }
         String[] toSplit = fromSplit[1].split(" /to ", 2);
-        if (toSplit.length < 2) {
-            System.out.println("Please use: event <description> /from <start> /to <end>");
-            return;
+        if (toSplit.length < 2 || toSplit[0].trim().isEmpty() || toSplit[1].trim().isEmpty()) {
+            throw new KiwiException(
+                    "Events need /from and /to — e.g. event meeting /from Mon 2pm /to 4pm");
         }
         addTask(new Event(fromSplit[0].trim(), toSplit[0].trim(), toSplit[1].trim()));
     }
@@ -113,11 +142,11 @@ public class Kiwi {
      * Stores a task and prints the standard "Got it" confirmation.
      *
      * @param task task to add
+     * @throws KiwiException if the list is already full
      */
-    private static void addTask(Task task) {
+    private static void addTask(Task task) throws KiwiException {
         if (taskCount >= MAX_TASKS) {
-            System.out.println("Cannot add more tasks. The list is full.");
-            return;
+            throw new KiwiException("Your task list is full (max " + MAX_TASKS + ").");
         }
         tasks[taskCount] = task;
         taskCount++;
@@ -134,6 +163,31 @@ public class Kiwi {
             // Match the project example: "1.[T][ ] ..."
             System.out.println((i + 1) + "." + tasks[i]);
         }
+    }
+
+    /**
+     * Reads the 1-based task number from a mark/unmark command.
+     *
+     * @param input   full command line
+     * @param command {@code mark} or {@code unmark}
+     * @return 0-based index into {@link #tasks}
+     * @throws KiwiException if the number is missing, not an integer, or out of range
+     */
+    private static int parseTaskNumber(String input, String command) throws KiwiException {
+        String[] parts = input.trim().split("\\s+");
+        if (parts.length < 2) {
+            throw new KiwiException("Please give a task number, e.g. " + command + " 1");
+        }
+        int index;
+        try {
+            index = Integer.parseInt(parts[1]) - 1;
+        } catch (NumberFormatException e) {
+            throw new KiwiException("That task number doesn't look like a number: " + parts[1]);
+        }
+        if (index < 0 || index >= taskCount) {
+            throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
+        }
+        return index;
     }
 
     private static void markDone(int index) {

@@ -9,6 +9,9 @@ public class Kiwi {
             + "| . \\| |\\ V  V /| |\n"
             + "|_|\\_\\_| \\_/\\_/ |_|\n";
 
+private static String[] data = new String[100];
+private static int dataIndex = 0;
+
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         System.out.println(LINE);
@@ -19,12 +22,13 @@ public class Kiwi {
         String input = in.nextLine();
         while (!input.equals("bye")) {
             System.out.println(LINE);
-            System.out.println(input);
+            System.out.println("added: " + input);
+            data[dataIndex] = input;
+            dataIndex++;
             System.out.println(LINE);
             input = in.nextLine();
         }
         System.out.println("Bye. Hope to see you again soon!");
         System.out.println(LINE);
-        return;
     }
 }

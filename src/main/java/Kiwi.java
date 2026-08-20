@@ -1,7 +1,12 @@
 import java.util.Scanner;
 
+/**
+ * Kiwi is a simple chatbot that stores tasks in memory,
+ * lists them, and can mark or unmark them as done.
+ */
 public class Kiwi {
     private static final String LINE = "____________________________________________________________";
+    private static final int MAX_TASKS = 100;
 
     private static final String BANNER = " _  ___          _ \n"
             + "| |/ (_)_      _(_)\n"
@@ -9,8 +14,7 @@ public class Kiwi {
             + "| . \\| |\\ V  V /| |\n"
             + "|_|\\_\\_| \\_/\\_/ |_|\n";
 
-    private static final String[] tasks = new String[100];
-    private static final boolean[] taskDone = new boolean[100];
+    private static final Task[] tasks = new Task[MAX_TASKS];
     private static int taskCount = 0;
 
     public static void main(String[] args) {
@@ -22,9 +26,9 @@ public class Kiwi {
             printLine();
             if (input.equals("list")) {
                 listTasks();
-            } else if (input.startsWith("mark")) {
+            } else if (input.startsWith("mark ")) {
                 markDone(Integer.parseInt(input.split(" ")[1]) - 1);
-            } else if (input.startsWith("unmark")) {
+            } else if (input.startsWith("unmark ")) {
                 markUndone(Integer.parseInt(input.split(" ")[1]) - 1);
             } else {
                 addTask(input);
@@ -63,30 +67,33 @@ public class Kiwi {
      * @param description text entered by the user
      */
     private static void addTask(String description) {
-        tasks[taskCount] = description;
-        taskDone[taskCount] = false;
+        if (taskCount >= MAX_TASKS) {
+            System.out.println("Cannot add more tasks. The list is full.");
+            return;
+        }
+        Task task = new Task(description);
+        tasks[taskCount] = task;
         taskCount++;
-        System.out.println("added: " + description);
+        System.out.println("added: " + task);
     }
 
     /** Prints all stored tasks with 1-based numbering. */
     private static void listTasks() {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
-            String checkbox = taskDone[i] ? "[X]" : "[ ]";
-            System.out.println((i + 1) + ". " + checkbox + " " + tasks[i]);
+            System.out.println((i + 1) + ". " + tasks[i]);
         }
     }
 
     private static void markDone(int index) {
-        taskDone[index] = true;
+        tasks[index].markAsDone();
         System.out.println("Marked this task as done:");
-        System.out.println((index + 1) + ". [X] " + tasks[index]);
+        System.out.println((index + 1) + ". " + tasks[index]);
     }
 
     private static void markUndone(int index) {
-        taskDone[index] = false;
+        tasks[index].markAsNotDone();
         System.out.println("Marked this task as not done yet:");
-        System.out.println((index + 1) + ". [ ] " + tasks[index]);
+        System.out.println((index + 1) + ". " + tasks[index]);
     }
 }

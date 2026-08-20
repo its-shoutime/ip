@@ -1,0 +1,13 @@
+---
+description: After code updates, refresh the UI test plan and run the test-ui skill.
+alwaysApply: true
+---
+
+# UI tests after code updates
+
+Whenever you change application code in this repository (especially under `src/`):
+
+1. Update `test/ui-test-plan.md` if needed so each case's aim, inputs, and expected output still match the chatbot's console behaviour.
+2. Invoke the `test-ui` skill: read `.cursor/skills/test-ui/SKILL.md` and follow it (typically run `python3 .cursor/skills/test-ui/scripts/run-ui-tests.py`).
+
+Do both steps before treating the code update as finished. On a failing UI test, fix the code or the plan, then re-run until the session passes or the user directs otherwise.

@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 /**
  * Kiwi is a simple chatbot that stores to-dos, deadlines, and events in memory,
- * lists them, and can mark or unmark them as done.
+ * lists them, and can mark, unmark, or delete them.
  */
 public class Kiwi {
     private static final String LINE = "____________________________________________________________";
@@ -55,9 +55,11 @@ public class Kiwi {
             markDone(parseTaskNumber(input, "mark"));
         } else if (input.equals("unmark") || input.startsWith("unmark ")) {
             markUndone(parseTaskNumber(input, "unmark"));
+        } else if (input.equals("delete") || input.startsWith("delete ")) {
+            deleteTask(parseTaskNumber(input, "delete"));
         } else {
             throw new KiwiException(
-                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, or bye.");
+                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
         }
     }
 
@@ -166,10 +168,10 @@ public class Kiwi {
     }
 
     /**
-     * Reads the 1-based task number from a mark/unmark command.
+     * Reads the 1-based task number from a mark/unmark/delete command.
      *
      * @param input   full command line
-     * @param command {@code mark} or {@code unmark}
+     * @param command {@code mark}, {@code unmark}, or {@code delete}
      * @return 0-based index into {@link #tasks}
      * @throws KiwiException if the number is missing, not an integer, or out of range
      */
@@ -200,5 +202,23 @@ public class Kiwi {
         tasks[index].markAsNotDone();
         System.out.println("Marked this task as not done yet:");
         System.out.println((index + 1) + "." + tasks[index]);
+    }
+
+    /**
+     * Removes the task at the given index and shifts later tasks down.
+     *
+     * @param index 0-based position of the task to remove
+     */
+    private static void deleteTask(int index) {
+        Task removed = tasks[index];
+        for (int i = index; i < taskCount - 1; i++) {
+            tasks[i] = tasks[i + 1];
+        }
+        taskCount--;
+        tasks[taskCount] = null; // clear the leftover reference
+        System.out.println("Noted. I've removed this task:");
+        System.out.println("  " + removed);
+        System.out.println("Now you have " + taskCount + " task"
+                + (taskCount == 1 ? "" : "s") + " in the list.");
     }
 }

@@ -193,7 +193,7 @@ ____________________________________________________________
 A todo needs a description — try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
@@ -313,7 +313,7 @@ Here are the tasks in your list:
 1.[T][ ] buy milk
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
@@ -513,6 +513,149 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] only real task
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC10: Delete a middle task and renumber the list
+
+**Aim:** `delete 3` removes that task, shifts later items up, and reports the new count.
+
+**Inputs:**
+```text
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+todo join sports club
+todo borrow book
+list
+delete 3
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] read book
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [D][ ] return book (by: June 6th)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] join sports club
+Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] borrow book
+Now you have 5 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][ ] read book
+2.[D][ ] return book (by: June 6th)
+3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+4.[T][ ] join sports club
+5.[T][ ] borrow book
+____________________________________________________________
+____________________________________________________________
+Noted. I've removed this task:
+  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][ ] read book
+2.[D][ ] return book (by: June 6th)
+3.[T][ ] join sports club
+4.[T][ ] borrow book
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC11: Invalid delete leaves list unchanged; valid delete works
+
+**Aim:** Bad `delete` inputs must not remove tasks; a later valid `delete 1` removes the first item only.
+
+**Inputs:**
+```text
+todo keep me
+delete 2
+delete
+delete abc
+list
+todo another
+delete 1
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] keep me
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+There is no task number 2 in your list.
+____________________________________________________________
+____________________________________________________________
+Please give a task number, e.g. delete 1
+____________________________________________________________
+____________________________________________________________
+That task number doesn't look like a number: abc
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][ ] keep me
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] another
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Noted. I've removed this task:
+  [T][ ] keep me
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][ ] another
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!

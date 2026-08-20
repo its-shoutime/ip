@@ -10,6 +10,7 @@ runs each test case against the program, shows the console session, and
 - **Source directory:** `src/main/java`
 - **Java version:** `25`
 - **Task storage:** `ArrayList<Task>` (dynamic size; add/delete via list operations)
+- **Task kinds:** `TaskType` enum (`TODO`, `DEADLINE`, `EVENT`) for type icons `[T]` / `[D]` / `[E]`
 - **How tests are run:** compile all `*.java` in the source directory, then for each test case pipe **Inputs** to the program's stdin and compare full stdout to **Expected output**.
 
 Suggested command (used by the skill runner):

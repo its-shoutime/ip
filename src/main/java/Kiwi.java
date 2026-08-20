@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 /**
- * Kiwi is a simple chatbot that stores tasks in memory,
+ * Kiwi is a simple chatbot that stores to-dos, deadlines, and events in memory,
  * lists them, and can mark or unmark them as done.
  */
 public class Kiwi {
@@ -30,8 +30,14 @@ public class Kiwi {
                 markDone(Integer.parseInt(input.split(" ")[1]) - 1);
             } else if (input.startsWith("unmark ")) {
                 markUndone(Integer.parseInt(input.split(" ")[1]) - 1);
+            } else if (input.startsWith("todo ")) {
+                addTodo(input.substring("todo ".length()).trim());
+            } else if (input.startsWith("deadline ")) {
+                addDeadline(input.substring("deadline ".length()).trim());
+            } else if (input.startsWith("event ")) {
+                addEvent(input.substring("event ".length()).trim());
             } else {
-                addTask(input);
+                System.out.println("I don't understand that command.");
             }
             printLine();
             input = in.nextLine();
@@ -62,38 +68,83 @@ public class Kiwi {
     }
 
     /**
-     * Stores a new task if there is still space in the fixed-size list.
+     * Adds a to-do if there is still space in the list.
      *
-     * @param description text entered by the user
+     * @param description task description after the {@code todo} command
      */
-    private static void addTask(String description) {
+    private static void addTodo(String description) {
+        addTask(new Todo(description));
+    }
+
+    /**
+     * Parses {@code description /by time} and adds a deadline task.
+     *
+     * @param body text after the {@code deadline} command
+     */
+    private static void addDeadline(String body) {
+        String[] parts = body.split(" /by ", 2);
+        if (parts.length < 2) {
+            System.out.println("Please use: deadline <description> /by <when>");
+            return;
+        }
+        addTask(new Deadline(parts[0].trim(), parts[1].trim()));
+    }
+
+    /**
+     * Parses {@code description /from start /to end} and adds an event task.
+     *
+     * @param body text after the {@code event} command
+     */
+    private static void addEvent(String body) {
+        String[] fromSplit = body.split(" /from ", 2);
+        if (fromSplit.length < 2) {
+            System.out.println("Please use: event <description> /from <start> /to <end>");
+            return;
+        }
+        String[] toSplit = fromSplit[1].split(" /to ", 2);
+        if (toSplit.length < 2) {
+            System.out.println("Please use: event <description> /from <start> /to <end>");
+            return;
+        }
+        addTask(new Event(fromSplit[0].trim(), toSplit[0].trim(), toSplit[1].trim()));
+    }
+
+    /**
+     * Stores a task and prints the standard "Got it" confirmation.
+     *
+     * @param task task to add
+     */
+    private static void addTask(Task task) {
         if (taskCount >= MAX_TASKS) {
             System.out.println("Cannot add more tasks. The list is full.");
             return;
         }
-        Task task = new Task(description);
         tasks[taskCount] = task;
         taskCount++;
-        System.out.println("added: " + task);
+        System.out.println("Got it. I've added this task:");
+        System.out.println("  " + task);
+        System.out.println("Now you have " + taskCount + " task"
+                + (taskCount == 1 ? "" : "s") + " in the list.");
     }
 
     /** Prints all stored tasks with 1-based numbering. */
     private static void listTasks() {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
-            System.out.println((i + 1) + ". " + tasks[i]);
+            // Match the project example: "1.[T][ ] ..."
+            System.out.println((i + 1) + "." + tasks[i]);
         }
     }
 
     private static void markDone(int index) {
         tasks[index].markAsDone();
         System.out.println("Marked this task as done:");
-        System.out.println((index + 1) + ". " + tasks[index]);
+        System.out.println((index + 1) + "." + tasks[index]);
     }
 
     private static void markUndone(int index) {
         tasks[index].markAsNotDone();
         System.out.println("Marked this task as not done yet:");
-        System.out.println((index + 1) + ". " + tasks[index]);
+        System.out.println((index + 1) + "." + tasks[index]);
     }
 }

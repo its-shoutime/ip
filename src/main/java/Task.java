@@ -1,5 +1,6 @@
 /**
  * Represents a task with a description and a done/not-done status.
+ * Subclasses add a type icon and any extra details (deadline or event times).
  */
 public class Task {
     protected String description;
@@ -44,7 +45,8 @@ public class Task {
     }
 
     /**
-     * Returns a display string such as "[X] read book".
+     * Returns a display string such as "[ ] read book".
+     * Subclasses prepend a type icon like {@code [T]}.
      *
      * @return formatted task text
      */

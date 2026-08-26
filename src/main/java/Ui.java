@@ -35,11 +35,12 @@ public class Ui {
         showLine();
     }
 
-    /** Shows the goodbye message. */
+    /**
+     * Shows the goodbye message only (no divider lines).
+     * The main loop prints the dividers around each command, including exit.
+     */
     public void showGoodbye() {
-        showLine();
         System.out.println("Bye. Hope to see you again soon!");
-        showLine();
     }
 
     /**

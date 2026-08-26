@@ -1,95 +1,41 @@
 import java.time.LocalDate;
 
 /**
- * Makes sense of a raw user command line: identifies the command and parses
- * its arguments into values the rest of the app can use.
+ * Makes sense of a raw user command line and returns a {@link Command} ready to run.
  * Does not mutate the task list or print messages.
  */
 public class Parser {
 
-    /** The kinds of commands Kiwi understands (except {@code bye}, handled in the main loop). */
-    public enum CommandType {
-        LIST, TODO, DEADLINE, EVENT, ON, MARK, UNMARK, DELETE
-    }
-
     /**
-     * Result of parsing one command: a type plus the values that command needs.
-     * Only the fields relevant to {@link #type} are set; others are unused.
-     */
-    public static class ParsedCommand {
-        private final CommandType type;
-        private final Task task;
-        private final LocalDate date;
-        private final int index;
-
-        private ParsedCommand(CommandType type, Task task, LocalDate date, int index) {
-            this.type = type;
-            this.task = task;
-            this.date = date;
-            this.index = index;
-        }
-
-        static ParsedCommand list() {
-            return new ParsedCommand(CommandType.LIST, null, null, -1);
-        }
-
-        static ParsedCommand add(CommandType type, Task task) {
-            return new ParsedCommand(type, task, null, -1);
-        }
-
-        static ParsedCommand on(LocalDate date) {
-            return new ParsedCommand(CommandType.ON, null, date, -1);
-        }
-
-        static ParsedCommand indexed(CommandType type, int index) {
-            return new ParsedCommand(type, null, null, index);
-        }
-
-        public CommandType getType() {
-            return type;
-        }
-
-        public Task getTask() {
-            return task;
-        }
-
-        public LocalDate getDate() {
-            return date;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-    }
-
-    /**
-     * Parses one full input line into a {@link ParsedCommand}.
+     * Parses one full input line into a {@link Command}.
      *
      * @param input full line typed by the user
-     * @return structured command ready for execution
+     * @return a command object that can be executed
      * @throws KiwiException if the command is unknown or its arguments are invalid
      */
-    public static ParsedCommand parse(String input) throws KiwiException {
-        if (input.equals("list")) {
-            return ParsedCommand.list();
+    public static Command parse(String input) throws KiwiException {
+        if (input.equals("bye")) {
+            return new ExitCommand();
+        } else if (input.equals("list")) {
+            return new ListCommand();
         } else if (input.equals("todo") || input.startsWith("todo ")) {
             String description = input.equals("todo") ? "" : input.substring("todo ".length()).trim();
-            return ParsedCommand.add(CommandType.TODO, parseTodo(description));
+            return new AddCommand(parseTodo(description));
         } else if (input.equals("deadline") || input.startsWith("deadline ")) {
             String body = input.equals("deadline") ? "" : input.substring("deadline ".length()).trim();
-            return ParsedCommand.add(CommandType.DEADLINE, parseDeadline(body));
+            return new AddCommand(parseDeadline(body));
         } else if (input.equals("event") || input.startsWith("event ")) {
             String body = input.equals("event") ? "" : input.substring("event ".length()).trim();
-            return ParsedCommand.add(CommandType.EVENT, parseEvent(body));
+            return new AddCommand(parseEvent(body));
         } else if (input.equals("on") || input.startsWith("on ")) {
             String dateText = input.equals("on") ? "" : input.substring("on ".length()).trim();
-            return ParsedCommand.on(parseOnDate(dateText));
+            return new OnCommand(parseOnDate(dateText));
         } else if (input.equals("mark") || input.startsWith("mark ")) {
-            return ParsedCommand.indexed(CommandType.MARK, parseTaskNumber(input, "mark"));
+            return new MarkCommand(parseTaskNumber(input, "mark"));
         } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-            return ParsedCommand.indexed(CommandType.UNMARK, parseTaskNumber(input, "unmark"));
+            return new UnmarkCommand(parseTaskNumber(input, "unmark"));
         } else if (input.equals("delete") || input.startsWith("delete ")) {
-            return ParsedCommand.indexed(CommandType.DELETE, parseTaskNumber(input, "delete"));
+            return new DeleteCommand(parseTaskNumber(input, "delete"));
         } else {
             throw new KiwiException(
                     "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, "
@@ -177,7 +123,7 @@ public class Parser {
 
     /**
      * Reads the 1-based task number from a mark/unmark/delete command.
-     * Does not check whether the index exists in the list — callers do that.
+     * Does not check whether the index exists in the list — commands do that at execute time.
      *
      * @param input   full command line
      * @param command {@code mark}, {@code unmark}, or {@code delete}

@@ -1,42 +1,34 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * Kiwi is a simple chatbot that stores to-dos, deadlines, and events in memory,
  * lists them, and can mark, unmark, or delete them.
  */
 public class Kiwi {
-    private static final String LINE = "____________________________________________________________";
-
-    private static final String BANNER = " _  ___          _ \n"
-            + "| |/ (_)_      _(_)\n"
-            + "| ' /| \\ \\ /\\ / / |\n"
-            + "| . \\| |\\ V  V /| |\n"
-            + "|_|\\_\\_| \\_/\\_/ |_|\n";
-
     /** Dynamically sized list of tasks (grows/shrinks as the user adds or deletes). */
     private static final ArrayList<Task> tasks = new ArrayList<>();
+
+    private static final Ui ui = new Ui();
 
     public static void main(String[] args) {
         tasks.addAll(Storage.load());
 
-        Scanner in = new Scanner(System.in);
-        showWelcome();
+        ui.showWelcome();
 
-        String input = in.nextLine();
+        String input = ui.readCommand();
         while (!input.equals("bye")) {
-            printLine();
+            ui.showLine();
             try {
                 handleCommand(input);
             } catch (KiwiException e) {
-                System.out.println(e.getMessage());
+                ui.showError(e.getMessage());
             }
-            printLine();
-            input = in.nextLine();
+            ui.showLine();
+            input = ui.readCommand();
         }
 
-        showGoodbye();
+        ui.showGoodbye();
     }
 
     /**
@@ -67,27 +59,6 @@ public class Kiwi {
                     "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, "
                             + "mark, unmark, delete, or bye.");
         }
-    }
-
-    /** Prints the horizontal divider used between chatbot messages. */
-    private static void printLine() {
-        System.out.println(LINE);
-    }
-
-    /** Shows the banner and welcome message. */
-    private static void showWelcome() {
-        printLine();
-        System.out.print(BANNER);
-        System.out.println("Hello! I'm Kiwi.");
-        System.out.println("What can I do for you?");
-        printLine();
-    }
-
-    /** Shows the goodbye message and exits the chat. */
-    private static void showGoodbye() {
-        printLine();
-        System.out.println("Bye. Hope to see you again soon!");
-        printLine();
     }
 
     /**
@@ -159,18 +130,12 @@ public class Kiwi {
     private static void addTask(Task task) {
         tasks.add(task);
         Storage.save(tasks);
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + task);
-        System.out.println("Now you have " + tasks.size() + " task"
-                + (tasks.size() == 1 ? "" : "s") + " in the list.");
+        ui.showTaskAdded(task, tasks.size());
     }
 
     /** Prints all stored tasks with 1-based numbering. */
     private static void listTasks() {
-        System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.get(i));
-        }
+        ui.showTaskList(tasks);
     }
 
     /**
@@ -184,18 +149,7 @@ public class Kiwi {
             throw new KiwiException("Please give a date, e.g. on 2019-12-02");
         }
         LocalDate date = KiwiDate.parse(dateText);
-        System.out.println("Here are the deadlines/events on " + KiwiDate.format(date) + ":");
-        int shown = 0;
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            if (task.occursOn(date)) {
-                System.out.println((i + 1) + "." + task);
-                shown++;
-            }
-        }
-        if (shown == 0) {
-            System.out.println("None found.");
-        }
+        ui.showTasksOn(date, tasks);
     }
 
     /**
@@ -227,16 +181,14 @@ public class Kiwi {
         Task task = tasks.get(index);
         task.markAsDone();
         Storage.save(tasks);
-        System.out.println("Marked this task as done:");
-        System.out.println((index + 1) + "." + task);
+        ui.showMarked(index + 1, task);
     }
 
     private static void markUndone(int index) {
         Task task = tasks.get(index);
         task.markAsNotDone();
         Storage.save(tasks);
-        System.out.println("Marked this task as not done yet:");
-        System.out.println((index + 1) + "." + task);
+        ui.showUnmarked(index + 1, task);
     }
 
     /**
@@ -247,9 +199,6 @@ public class Kiwi {
     private static void deleteTask(int index) {
         Task removed = tasks.remove(index);
         Storage.save(tasks);
-        System.out.println("Noted. I've removed this task:");
-        System.out.println("  " + removed);
-        System.out.println("Now you have " + tasks.size() + " task"
-                + (tasks.size() == 1 ? "" : "s") + " in the list.");
+        ui.showTaskDeleted(removed, tasks.size());
     }
 }

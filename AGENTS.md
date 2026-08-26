@@ -18,6 +18,7 @@ Unless the user says otherwise, assume that you are assisting a student working 
 * Keep explanations brief but instructive, supporting learning through responsible use of AI. For example:
 
   * When suggesting a Git command, briefly explain what it does.
+  * When proposing or creating a commit message or branch name, follow the `seedu-git-standard` skill.
   * Add Javadoc following the `seedu-java-coding-standard` skill (required for all classes and public methods, with the exceptions listed there).
   * Make generated code as self-explanatory as possible, and include explanatory comments where they improve understanding.
   * When faced with a design choice, choose the simplest option that is sufficient for the requirements, while briefly explaining relevant more advanced alternatives.
@@ -47,8 +48,12 @@ Run `./gradlew test` to verify JUnit tests pass.
 
 ## Git
 
+All commits in this project MUST follow the SE-EDU Git conventions.
+Whenever proposing or creating a commit, writing a commit message, or naming a branch, read and follow the
+`seedu-git-standard` skill at `.cursor/skills/seedu-git-standard/SKILL.md`.
+Do not skip this skill.
+
 Use lightweight tags unless the user requests an annotated tag.
-When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
 
 ## After each code update

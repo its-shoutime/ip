@@ -17,7 +17,7 @@ public class TaskList {
     /**
      * Creates a task list that wraps an existing list (e.g. loaded from storage).
      *
-     * @param tasks tasks to manage; must not be {@code null}
+     * @param tasks tasks to manage; must not be {@code null}.
      */
     public TaskList(ArrayList<Task> tasks) {
         this.tasks = tasks;
@@ -26,7 +26,7 @@ public class TaskList {
     /**
      * Adds a task to the end of the list.
      *
-     * @param task task to add
+     * @param task task to add.
      */
     public void add(Task task) {
         tasks.add(task);
@@ -35,8 +35,8 @@ public class TaskList {
     /**
      * Removes and returns the task at the given 0-based index.
      *
-     * @param index 0-based position of the task to remove
-     * @return the removed task
+     * @param index 0-based position of the task to remove.
+     * @return the removed task.
      */
     public Task delete(int index) {
         return tasks.remove(index);
@@ -45,8 +45,8 @@ public class TaskList {
     /**
      * Returns the task at the given 0-based index.
      *
-     * @param index 0-based position
-     * @return the task at that position
+     * @param index 0-based position.
+     * @return the task at that position.
      */
     public Task get(int index) {
         return tasks.get(index);
@@ -55,7 +55,7 @@ public class TaskList {
     /**
      * Returns how many tasks are in the list.
      *
-     * @return current size
+     * @return current size.
      */
     public int size() {
         return tasks.size();
@@ -64,7 +64,7 @@ public class TaskList {
     /**
      * Returns the underlying list for saving or display.
      *
-     * @return the mutable list of tasks
+     * @return the mutable list of tasks.
      */
     public ArrayList<Task> getTasks() {
         return tasks;
@@ -73,7 +73,7 @@ public class TaskList {
     /**
      * Marks the task at {@code index} as done.
      *
-     * @param index 0-based position
+     * @param index 0-based position.
      */
     public void markDone(int index) {
         tasks.get(index).markAsDone();
@@ -82,7 +82,7 @@ public class TaskList {
     /**
      * Marks the task at {@code index} as not done.
      *
-     * @param index 0-based position
+     * @param index 0-based position.
      */
     public void markNotDone(int index) {
         tasks.get(index).markAsNotDone();
@@ -91,8 +91,8 @@ public class TaskList {
     /**
      * Checks whether {@code index} is a valid 0-based position in this list.
      *
-     * @param index candidate index
-     * @return {@code true} if the index is in range
+     * @param index candidate index.
+     * @return {@code true} if the index is in range.
      */
     public boolean isValidIndex(int index) {
         return index >= 0 && index < tasks.size();

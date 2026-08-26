@@ -1,6 +1,7 @@
 package kiwi.command;
 
 import java.time.LocalDate;
+
 import kiwi.Storage;
 import kiwi.Ui;
 import kiwi.task.TaskList;
@@ -12,7 +13,9 @@ public class OnCommand extends Command {
     private final LocalDate date;
 
     /**
-     * @param date date to filter by
+     * Creates a command that lists deadlines and events on the given date.
+     *
+     * @param date date to filter by.
      */
     public OnCommand(LocalDate date) {
         this.date = date;

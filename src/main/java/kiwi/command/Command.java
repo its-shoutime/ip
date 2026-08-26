@@ -14,17 +14,17 @@ public abstract class Command {
     /**
      * Runs this command.
      *
-     * @param tasks   the in-memory task list
-     * @param ui      user interface for messages
-     * @param storage persistence for saving after changes
-     * @throws KiwiException if the command cannot be completed (e.g. bad index)
+     * @param tasks the in-memory task list.
+     * @param ui user interface for messages.
+     * @param storage persistence for saving after changes.
+     * @throws KiwiException If the command cannot be completed (e.g. bad index).
      */
     public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws KiwiException;
 
     /**
-     * Whether this command should end the chatbot loop.
+     * Returns whether this command should end the chatbot loop.
      *
-     * @return {@code true} only for exit; default is {@code false}
+     * @return {@code true} only for exit; default is {@code false}.
      */
     public boolean isExit() {
         return false;

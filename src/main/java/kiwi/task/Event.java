@@ -1,6 +1,7 @@
 package kiwi.task;
 
 import java.time.LocalDate;
+
 import kiwi.KiwiException;
 
 /**
@@ -13,10 +14,10 @@ public class Event extends Task {
     /**
      * Creates an event task.
      *
-     * @param description what the event is
-     * @param from        start date (inclusive)
-     * @param to          end date (inclusive)
-     * @throws KiwiException if {@code to} is before {@code from}
+     * @param description what the event is.
+     * @param from start date (inclusive).
+     * @param to end date (inclusive).
+     * @throws KiwiException If {@code to} is before {@code from}.
      */
     public Event(String description, LocalDate from, LocalDate to) throws KiwiException {
         super(description, TaskType.EVENT);
@@ -30,7 +31,7 @@ public class Event extends Task {
     /**
      * {@inheritDoc}
      *
-     * @return {@code true} if {@code date} falls in this event's inclusive from–to range
+     * @return {@code true} if {@code date} falls in this event's inclusive from–to range.
      */
     @Override
     public boolean occursOn(LocalDate date) {

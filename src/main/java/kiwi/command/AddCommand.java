@@ -12,7 +12,9 @@ public class AddCommand extends Command {
     private final Task task;
 
     /**
-     * @param task the task to add (already parsed)
+     * Creates a command that adds the given task.
+     *
+     * @param task the task to add (already parsed).
      */
     public AddCommand(Task task) {
         this.task = task;

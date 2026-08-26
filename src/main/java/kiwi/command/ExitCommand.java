@@ -22,7 +22,7 @@ public class ExitCommand extends Command {
     /**
      * {@inheritDoc}
      *
-     * @return {@code true} so the chatbot loop can end
+     * @return {@code true} so the chatbot loop can end.
      */
     @Override
     public boolean isExit() {

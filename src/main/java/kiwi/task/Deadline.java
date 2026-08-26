@@ -11,8 +11,8 @@ public class Deadline extends Task {
     /**
      * Creates a deadline task.
      *
-     * @param description what needs to be done
-     * @param by         due date
+     * @param description what needs to be done.
+     * @param by due date.
      */
     public Deadline(String description, LocalDate by) {
         super(description, TaskType.DEADLINE);
@@ -22,7 +22,7 @@ public class Deadline extends Task {
     /**
      * Returns the due date.
      *
-     * @return due date
+     * @return due date.
      */
     public LocalDate getBy() {
         return by;
@@ -31,7 +31,7 @@ public class Deadline extends Task {
     /**
      * {@inheritDoc}
      *
-     * @return {@code true} if {@code date} is this deadline's due date
+     * @return {@code true} if {@code date} is this deadline's due date.
      */
     @Override
     public boolean occursOn(LocalDate date) {

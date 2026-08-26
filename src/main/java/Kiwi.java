@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -53,6 +54,8 @@ public class Kiwi {
             addDeadline(input.equals("deadline") ? "" : input.substring("deadline ".length()).trim());
         } else if (input.equals("event") || input.startsWith("event ")) {
             addEvent(input.equals("event") ? "" : input.substring("event ".length()).trim());
+        } else if (input.equals("on") || input.startsWith("on ")) {
+            listTasksOn(input.equals("on") ? "" : input.substring("on ".length()).trim());
         } else if (input.equals("mark") || input.startsWith("mark ")) {
             markDone(parseTaskNumber(input, "mark"));
         } else if (input.equals("unmark") || input.startsWith("unmark ")) {
@@ -61,7 +64,8 @@ public class Kiwi {
             deleteTask(parseTaskNumber(input, "delete"));
         } else {
             throw new KiwiException(
-                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
+                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, "
+                            + "mark, unmark, delete, or bye.");
         }
     }
 
@@ -100,46 +104,51 @@ public class Kiwi {
     }
 
     /**
-     * Parses {@code description /by time} and adds a deadline task.
+     * Parses {@code description /by yyyy-MM-dd} and adds a deadline task.
      *
      * @param body text after the {@code deadline} command
-     * @throws KiwiException if the description or {@code /by} part is missing
+     * @throws KiwiException if the description or {@code /by} date is missing/invalid
      */
     private static void addDeadline(String body) throws KiwiException {
         if (body.isEmpty()) {
             throw new KiwiException(
-                    "A deadline needs details — try: deadline return book /by Sunday");
+                    "A deadline needs details — try: deadline return book /by 2019-12-02");
         }
         String[] parts = body.split(" /by ", 2);
         if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
             throw new KiwiException(
-                    "Deadlines need both a description and /by <when> — e.g. deadline return book /by Sunday");
+                    "Deadlines need both a description and /by yyyy-MM-dd — "
+                            + "e.g. deadline return book /by 2019-12-02");
         }
-        addTask(new Deadline(parts[0].trim(), parts[1].trim()));
+        addTask(new Deadline(parts[0].trim(), KiwiDate.parse(parts[1].trim())));
     }
 
     /**
-     * Parses {@code description /from start /to end} and adds an event task.
+     * Parses {@code description /from yyyy-MM-dd /to yyyy-MM-dd} and adds an event.
      *
      * @param body text after the {@code event} command
-     * @throws KiwiException if description, {@code /from}, or {@code /to} is missing
+     * @throws KiwiException if description or dates are missing/invalid
      */
     private static void addEvent(String body) throws KiwiException {
         if (body.isEmpty()) {
             throw new KiwiException(
-                    "An event needs details — try: event meeting /from Mon 2pm /to 4pm");
+                    "An event needs details — try: event meeting /from 2019-10-04 /to 2019-10-11");
         }
         String[] fromSplit = body.split(" /from ", 2);
         if (fromSplit.length < 2 || fromSplit[0].trim().isEmpty()) {
             throw new KiwiException(
-                    "Events need /from and /to — e.g. event meeting /from Mon 2pm /to 4pm");
+                    "Events need /from and /to as yyyy-MM-dd — "
+                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
         }
         String[] toSplit = fromSplit[1].split(" /to ", 2);
         if (toSplit.length < 2 || toSplit[0].trim().isEmpty() || toSplit[1].trim().isEmpty()) {
             throw new KiwiException(
-                    "Events need /from and /to — e.g. event meeting /from Mon 2pm /to 4pm");
+                    "Events need /from and /to as yyyy-MM-dd — "
+                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
         }
-        addTask(new Event(fromSplit[0].trim(), toSplit[0].trim(), toSplit[1].trim()));
+        LocalDate from = KiwiDate.parse(toSplit[0].trim());
+        LocalDate to = KiwiDate.parse(toSplit[1].trim());
+        addTask(new Event(fromSplit[0].trim(), from, to));
     }
 
     /**
@@ -160,8 +169,32 @@ public class Kiwi {
     private static void listTasks() {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
-            // Match the project example: "1.[T][ ] ..."
             System.out.println((i + 1) + "." + tasks.get(i));
+        }
+    }
+
+    /**
+     * Prints deadlines due on {@code dateText} and events whose range covers that day.
+     *
+     * @param dateText {@code yyyy-MM-dd} date
+     * @throws KiwiException if the date is missing or invalid
+     */
+    private static void listTasksOn(String dateText) throws KiwiException {
+        if (dateText.isEmpty()) {
+            throw new KiwiException("Please give a date, e.g. on 2019-12-02");
+        }
+        LocalDate date = KiwiDate.parse(dateText);
+        System.out.println("Here are the deadlines/events on " + KiwiDate.format(date) + ":");
+        int shown = 0;
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            if (task.occursOn(date)) {
+                System.out.println((i + 1) + "." + task);
+                shown++;
+            }
+        }
+        if (shown == 0) {
+            System.out.println("None found.");
         }
     }
 

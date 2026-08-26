@@ -18,6 +18,11 @@ public class OnCommand extends Command {
         this.date = date;
     }
 
+    /**
+     * Shows deadlines and events that occur on this command's date.
+     *
+     * {@inheritDoc}
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         ui.showTasksOn(date, tasks);

@@ -28,17 +28,30 @@ public class Deadline extends Task {
         return by;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@code true} if {@code date} is this deadline's due date
+     */
     @Override
     public boolean occursOn(LocalDate date) {
         return by.equals(date);
     }
 
+    /**
+     * {@inheritDoc}
+     * Appends the due date in {@code yyyy-MM-dd} form so it can be loaded again.
+     */
     @Override
     public String toSaveFormat() {
         // Keep ISO on disk so load can parse reliably.
         return super.toSaveFormat() + " | " + by.format(KiwiDate.INPUT_FORMAT);
     }
 
+    /**
+     * {@inheritDoc}
+     * Appends {@code (by: MMM dd yyyy)} for display.
+     */
     @Override
     public String toString() {
         return super.toString() + " (by: " + KiwiDate.format(by) + ")";

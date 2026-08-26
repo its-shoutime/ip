@@ -9,6 +9,11 @@ import kiwi.task.TaskList;
  */
 public class ListCommand extends Command {
 
+    /**
+     * Prints every task in the list.
+     *
+     * {@inheritDoc}
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         ui.showTaskList(tasks);

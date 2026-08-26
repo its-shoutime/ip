@@ -51,6 +51,11 @@ public class Kiwi {
         }
     }
 
+    /**
+     * Starts Kiwi using the default save file {@link #DEFAULT_FILE_PATH}.
+     *
+     * @param args command-line arguments (unused)
+     */
     public static void main(String[] args) {
         new Kiwi(DEFAULT_FILE_PATH).run();
     }

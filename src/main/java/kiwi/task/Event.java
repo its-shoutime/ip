@@ -27,17 +27,30 @@ public class Event extends Task {
         this.to = to;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@code true} if {@code date} falls in this event's inclusive from–to range
+     */
     @Override
     public boolean occursOn(LocalDate date) {
         return !date.isBefore(from) && !date.isAfter(to);
     }
 
+    /**
+     * {@inheritDoc}
+     * Appends the start and end dates in {@code yyyy-MM-dd} form so they can be loaded again.
+     */
     @Override
     public String toSaveFormat() {
         return super.toSaveFormat() + " | " + from.format(KiwiDate.INPUT_FORMAT)
                 + " | " + to.format(KiwiDate.INPUT_FORMAT);
     }
 
+    /**
+     * {@inheritDoc}
+     * Appends {@code (from: MMM dd yyyy to: MMM dd yyyy)} for display.
+     */
     @Override
     public String toString() {
         return super.toString() + " (from: " + KiwiDate.format(from)

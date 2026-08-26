@@ -18,6 +18,11 @@ public class MarkCommand extends Command {
         this.index = index;
     }
 
+    /**
+     * Marks the task done, saves the list, and shows a confirmation.
+     *
+     * {@inheritDoc}
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws KiwiException {
         if (!tasks.isValidIndex(index)) {

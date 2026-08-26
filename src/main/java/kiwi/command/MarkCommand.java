@@ -1,3 +1,10 @@
+package kiwi.command;
+
+import kiwi.KiwiException;
+import kiwi.Storage;
+import kiwi.Ui;
+import kiwi.task.TaskList;
+
 /**
  * Marks the task at a given 0-based index as done and saves.
  */

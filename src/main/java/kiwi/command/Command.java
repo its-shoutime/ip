@@ -1,3 +1,10 @@
+package kiwi.command;
+
+import kiwi.KiwiException;
+import kiwi.Storage;
+import kiwi.Ui;
+import kiwi.task.TaskList;
+
 /**
  * A user command that can be executed against the task list, UI, and storage.
  * Subclasses implement the specific behaviour for each command word.

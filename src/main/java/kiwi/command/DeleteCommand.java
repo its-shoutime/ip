@@ -1,3 +1,11 @@
+package kiwi.command;
+
+import kiwi.KiwiException;
+import kiwi.Storage;
+import kiwi.Ui;
+import kiwi.task.Task;
+import kiwi.task.TaskList;
+
 /**
  * Deletes the task at a given 0-based index and saves.
  */

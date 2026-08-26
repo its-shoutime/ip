@@ -1,3 +1,9 @@
+package kiwi;
+
+import kiwi.command.Command;
+import kiwi.command.ExitCommand;
+import kiwi.task.TaskList;
+
 /**
  * Kiwi is a simple chatbot that stores to-dos, deadlines, and events in memory,
  * lists them, and can mark, unmark, or delete them.

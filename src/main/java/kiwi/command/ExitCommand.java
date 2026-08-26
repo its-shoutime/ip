@@ -1,3 +1,9 @@
+package kiwi.command;
+
+import kiwi.Storage;
+import kiwi.Ui;
+import kiwi.task.TaskList;
+
 /**
  * Ends the chatbot session and shows the goodbye message.
  */

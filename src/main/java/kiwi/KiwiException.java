@@ -1,3 +1,5 @@
+package kiwi;
+
 /**
  * Thrown when Kiwi cannot handle a user command or a save-file line is invalid.
  */

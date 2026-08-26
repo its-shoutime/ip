@@ -6,14 +6,15 @@ runs each test case against the program, shows the console session, and
 
 ## Program launch
 
-- **Main class:** `Kiwi`
+- **Main class:** `kiwi.Kiwi`
 - **Source directory:** `src/main/java`
 - **Java version:** `25`
+- **Packages:** `kiwi` (app wiring, UI, storage, parser), `kiwi.task` (task model + list), `kiwi.command` (Command hierarchy)
 - **Task storage:** `ArrayList<Task>` (dynamic size; add/delete via list operations)
 - **Task kinds:** `TaskType` enum (`TODO`, `DEADLINE`, `EVENT`) for type icons `[T]` / `[D]` / `[E]`
 - **Hard-disk file:** `./data/kiwi.txt` — loaded at startup; rewritten (via temp file + replace) whenever the list changes. Missing/unreadable save → empty list with a message. Corrupted lines are skipped with a warning; valid lines still load.
 - **Deadline/event dates:** accepted/stored as `yyyy-MM-dd`, shown as `MMM dd yyyy`. Command `on yyyy-MM-dd` lists deadlines due that day and events whose range covers it.
-- **How tests are run:** compile all `*.java` in the source directory, then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | 2019-10-04 | 2019-10-11`.
+- **How tests are run:** compile all `*.java` under the source directory (recursively, for packages), then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | 2019-10-04 | 2019-10-11`.
 
 Suggested command (used by the skill runner):
 

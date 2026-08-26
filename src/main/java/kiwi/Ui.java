@@ -1,5 +1,10 @@
+package kiwi;
+
 import java.time.LocalDate;
 import java.util.Scanner;
+import kiwi.task.KiwiDate;
+import kiwi.task.Task;
+import kiwi.task.TaskList;
 
 /**
  * Handles all interactions with the user: reading commands and printing messages.

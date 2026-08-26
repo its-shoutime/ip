@@ -7,10 +7,28 @@
  * and talks to the user.
  */
 public class Kiwi {
-    private static final Ui ui = new Ui();
-    private static final TaskList tasks = new TaskList(Storage.load());
+    /** Default save file used when launching from {@link #main(String[])}. */
+    public static final String DEFAULT_FILE_PATH = "./data/kiwi.txt";
 
-    public static void main(String[] args) {
+    private final Storage storage;
+    private final TaskList tasks;
+    private final Ui ui;
+
+    /**
+     * Creates a Kiwi chatbot that loads tasks from {@code filePath}.
+     *
+     * @param filePath path to the task save file
+     */
+    public Kiwi(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+        tasks = new TaskList(storage.load());
+    }
+
+    /**
+     * Runs the chatbot loop until the user types {@code bye}.
+     */
+    public void run() {
         ui.showWelcome();
 
         String input = ui.readCommand();
@@ -34,7 +52,7 @@ public class Kiwi {
      * @param command structured command from {@link Parser#parse(String)}
      * @throws KiwiException if a task number is out of range
      */
-    private static void execute(Parser.ParsedCommand command) throws KiwiException {
+    private void execute(Parser.ParsedCommand command) throws KiwiException {
         switch (command.getType()) {
         case LIST:
             ui.showTaskList(tasks);
@@ -68,7 +86,7 @@ public class Kiwi {
      * @return the same index if valid
      * @throws KiwiException if there is no task at that number
      */
-    private static int requireValidIndex(int index) throws KiwiException {
+    private int requireValidIndex(int index) throws KiwiException {
         if (!tasks.isValidIndex(index)) {
             throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
         }
@@ -80,21 +98,21 @@ public class Kiwi {
      *
      * @param task task to add
      */
-    private static void addTask(Task task) {
+    private void addTask(Task task) {
         tasks.add(task);
-        Storage.save(tasks.getTasks());
+        storage.save(tasks.getTasks());
         ui.showTaskAdded(task, tasks.size());
     }
 
-    private static void markDone(int index) {
+    private void markDone(int index) {
         tasks.markDone(index);
-        Storage.save(tasks.getTasks());
+        storage.save(tasks.getTasks());
         ui.showMarked(index + 1, tasks.get(index));
     }
 
-    private static void markUndone(int index) {
+    private void markUndone(int index) {
         tasks.markNotDone(index);
-        Storage.save(tasks.getTasks());
+        storage.save(tasks.getTasks());
         ui.showUnmarked(index + 1, tasks.get(index));
     }
 
@@ -103,9 +121,13 @@ public class Kiwi {
      *
      * @param index 0-based position of the task to remove
      */
-    private static void deleteTask(int index) {
+    private void deleteTask(int index) {
         Task removed = tasks.delete(index);
-        Storage.save(tasks.getTasks());
+        storage.save(tasks.getTasks());
         ui.showTaskDeleted(removed, tasks.size());
+    }
+
+    public static void main(String[] args) {
+        new Kiwi(DEFAULT_FILE_PATH).run();
     }
 }

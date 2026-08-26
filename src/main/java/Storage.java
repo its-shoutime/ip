@@ -7,42 +7,53 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saves and loads the task list from a fixed file under the project root.
+ * Saves and loads the task list from a file path supplied at construction.
  * Invalid lines are skipped with a warning so valid tasks can still be restored.
  */
 public class Storage {
-    /** Relative path from the project root where tasks are stored. */
-    public static final String FILE_PATH = "./data/kiwi.txt";
-
-    private static final Path SAVE_PATH = Path.of(FILE_PATH);
-    private static final Path DATA_DIR = Path.of("data");
-    private static final Path TEMP_PATH = Path.of("./data/kiwi.txt.tmp");
+    private final String filePath;
+    private final Path savePath;
+    private final Path dataDir;
+    private final Path tempPath;
 
     /**
-     * Writes every task to {@link #FILE_PATH}, creating {@code ./data} if needed.
+     * Creates storage that reads/writes the given file (relative or absolute).
+     *
+     * @param filePath path to the save file, e.g. {@code ./data/kiwi.txt}
+     */
+    public Storage(String filePath) {
+        this.filePath = filePath;
+        this.savePath = Path.of(filePath);
+        Path parent = savePath.getParent();
+        this.dataDir = parent != null ? parent : Path.of(".");
+        this.tempPath = Path.of(filePath + ".tmp");
+    }
+
+    /**
+     * Writes every task to the save file, creating the parent directory if needed.
      * Uses a temp file then replace so a crash mid-write is less likely to wipe the save.
      *
      * @param tasks current in-memory task list
      */
-    public static void save(ArrayList<Task> tasks) {
+    public void save(ArrayList<Task> tasks) {
         try {
-            if (Files.exists(SAVE_PATH) && Files.isDirectory(SAVE_PATH)) {
-                System.out.println("Could not save tasks: " + FILE_PATH
+            if (Files.exists(savePath) && Files.isDirectory(savePath)) {
+                System.out.println("Could not save tasks: " + filePath
                         + " is a folder, not a file.");
                 return;
             }
-            Files.createDirectories(DATA_DIR);
+            Files.createDirectories(dataDir);
 
             List<String> lines = new ArrayList<>();
             for (Task task : tasks) {
                 lines.add(task.toSaveFormat());
             }
-            Files.write(TEMP_PATH, lines, StandardCharsets.UTF_8);
-            Files.move(TEMP_PATH, SAVE_PATH, StandardCopyOption.REPLACE_EXISTING);
+            Files.write(tempPath, lines, StandardCharsets.UTF_8);
+            Files.move(tempPath, savePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            System.out.println("Could not save tasks to " + FILE_PATH + ": " + e.getMessage());
+            System.out.println("Could not save tasks to " + filePath + ": " + e.getMessage());
             try {
-                Files.deleteIfExists(TEMP_PATH);
+                Files.deleteIfExists(tempPath);
             } catch (IOException ignored) {
                 // best-effort cleanup of the temp file
             }
@@ -50,36 +61,36 @@ public class Storage {
     }
 
     /**
-     * Reads tasks from {@link #FILE_PATH}.
+     * Reads tasks from the save file.
      * Missing file → empty list. Unreadable path or I/O errors → empty list with a message.
      * Blank lines are ignored; corrupted lines are skipped with a warning.
      *
      * @return tasks restored from disk (may be empty)
      */
-    public static ArrayList<Task> load() {
+    public ArrayList<Task> load() {
         ArrayList<Task> loaded = new ArrayList<>();
 
-        if (!Files.exists(SAVE_PATH)) {
+        if (!Files.exists(savePath)) {
             return loaded;
         }
-        if (Files.isDirectory(SAVE_PATH)) {
-            System.out.println("Could not load tasks: " + FILE_PATH
+        if (Files.isDirectory(savePath)) {
+            System.out.println("Could not load tasks: " + filePath
                     + " is a folder, not a file. Starting with an empty list.");
             return loaded;
         }
-        if (!Files.isRegularFile(SAVE_PATH)) {
-            System.out.println("Could not load tasks: " + FILE_PATH
+        if (!Files.isRegularFile(savePath)) {
+            System.out.println("Could not load tasks: " + filePath
                     + " is not a normal file. Starting with an empty list.");
             return loaded;
         }
-        if (!Files.isReadable(SAVE_PATH)) {
-            System.out.println("Could not load tasks: " + FILE_PATH
+        if (!Files.isReadable(savePath)) {
+            System.out.println("Could not load tasks: " + filePath
                     + " is not readable. Starting with an empty list.");
             return loaded;
         }
 
         try {
-            List<String> lines = Files.readAllLines(SAVE_PATH, StandardCharsets.UTF_8);
+            List<String> lines = Files.readAllLines(savePath, StandardCharsets.UTF_8);
             int lineNumber = 0;
             for (String raw : lines) {
                 lineNumber++;
@@ -96,7 +107,7 @@ public class Storage {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Could not load tasks from " + FILE_PATH
+            System.out.println("Could not load tasks from " + filePath
                     + ": " + e.getMessage() + ". Starting with an empty list.");
             return new ArrayList<>();
         }

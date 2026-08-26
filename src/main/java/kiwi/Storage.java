@@ -1,3 +1,5 @@
+package kiwi;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -5,6 +7,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import kiwi.task.Deadline;
+import kiwi.task.Event;
+import kiwi.task.KiwiDate;
+import kiwi.task.Task;
+import kiwi.task.Todo;
 
 /**
  * Saves and loads the task list from a file path supplied at construction.

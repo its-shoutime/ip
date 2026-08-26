@@ -1,0 +1,31 @@
+package kiwi.command;
+
+import kiwi.KiwiException;
+import kiwi.Storage;
+import kiwi.Ui;
+import kiwi.task.Task;
+import kiwi.task.TaskList;
+
+/**
+ * Deletes the task at a given 0-based index and saves.
+ */
+public class DeleteCommand extends Command {
+    private final int index;
+
+    /**
+     * @param index 0-based index of the task to delete
+     */
+    public DeleteCommand(int index) {
+        this.index = index;
+    }
+
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws KiwiException {
+        if (!tasks.isValidIndex(index)) {
+            throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
+        }
+        Task removed = tasks.delete(index);
+        storage.save(tasks.getTasks());
+        ui.showTaskDeleted(removed, tasks.size());
+    }
+}

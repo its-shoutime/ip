@@ -1,3 +1,5 @@
+package kiwi.task;
+
 /**
  * The kind of task Kiwi can store. Each value has a one-letter display icon.
  */

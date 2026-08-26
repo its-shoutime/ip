@@ -1,4 +1,7 @@
+package kiwi.task;
+
 import java.time.LocalDate;
+import kiwi.KiwiException;
 
 /**
  * An event task with a start and end calendar date (inclusive range).

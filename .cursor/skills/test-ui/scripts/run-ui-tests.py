@@ -95,16 +95,20 @@ def normalize(text: str) -> str:
 def read_plan_meta(plan_text: str) -> dict[str, str]:
     meta: dict[str, str] = {}
     for key in ("Main class", "Source directory", "Classpath output"):
-        match = re.search(rf"^\*\*{re.escape(key)}:\*\*\s*`([^`]+)`", plan_text, re.M)
+        match = re.search(
+            rf"^(?:- )?\*\*{re.escape(key)}:\*\*\s*`([^`]+)`",
+            plan_text,
+            re.M,
+        )
         if match:
             meta[key] = match.group(1)
     return meta
 
 
 def compile_program(root: Path, source_dir: str, out_dir: Path, main_class: str) -> None:
-    sources = sorted((root / source_dir).glob("*.java"))
+    sources = sorted((root / source_dir).rglob("*.java"))
     if not sources:
-        raise RuntimeError(f"No Java sources found in {root / source_dir}")
+        raise RuntimeError(f"No Java sources found under {root / source_dir}")
     cmd = ["javac", "-d", str(out_dir), *[str(path) for path in sources]]
     result = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
     if result.returncode != 0:

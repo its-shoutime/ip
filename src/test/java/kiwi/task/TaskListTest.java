@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,5 +70,45 @@ class TaskListTest {
         taskList.markDone(0);
         taskList.markNotDone(0);
         assertFalse(taskList.get(0).isDone());
+    }
+
+    @Test
+    void find_matchingDescriptions_returnsThoseTasksInOrder() {
+        taskList.add(new Todo("read book"));
+        TaskList matches = taskList.find("first");
+
+        assertEquals(1, matches.size());
+        assertEquals("first", matches.get(0).getDescription());
+        assertEquals(3, taskList.size());
+    }
+
+    @Test
+    void find_substringInSeveralTasks_returnsAllMatches() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        tasks.add(new Todo("project meeting"));
+        tasks.add(new Deadline("return book", LocalDate.of(2019, 6, 6)));
+        tasks.add(new Todo("borrow book"));
+
+        TaskList matches = tasks.find("book");
+
+        assertEquals(3, matches.size());
+        assertEquals("read book", matches.get(0).getDescription());
+        assertEquals("return book", matches.get(1).getDescription());
+        assertEquals("borrow book", matches.get(2).getDescription());
+    }
+
+    @Test
+    void find_noMatches_returnsEmptyList() {
+        TaskList matches = taskList.find("xyz");
+        assertEquals(0, matches.size());
+        assertEquals(2, taskList.size());
+    }
+
+    @Test
+    void find_isCaseSensitive() {
+        taskList.add(new Todo("Read Book"));
+        assertEquals(0, taskList.find("book").size());
+        assertEquals(1, taskList.find("Book").size());
     }
 }

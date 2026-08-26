@@ -93,6 +93,22 @@ public class Ui {
     }
 
     /**
+     * Prints tasks whose descriptions matched a {@code find} keyword, numbered from 1.
+     * Prints {@code None found.} when the filtered list is empty.
+     *
+     * @param matches tasks whose descriptions contain the search keyword
+     */
+    public void showMatchingTasks(TaskList matches) {
+        System.out.println("Here are the matching tasks in your list:");
+        for (int i = 0; i < matches.size(); i++) {
+            System.out.println((i + 1) + "." + matches.get(i));
+        }
+        if (matches.size() == 0) {
+            System.out.println("None found.");
+        }
+    }
+
+    /**
      * Prints deadlines/events that fall on {@code date}, or "None found."
      * Uses each task's original 1-based index in the full list.
      *

@@ -6,7 +6,7 @@ import kiwi.task.TaskList;
 
 /**
  * Kiwi is a simple chatbot that stores to-dos, deadlines, and events in memory,
- * lists them, and can mark, unmark, or delete them.
+ * lists them, finds them by keyword, and can mark, unmark, or delete them.
  * <p>
  * This class wires {@link Ui}, {@link Parser}, {@link TaskList}, and {@link Storage}
  * together. Each user line becomes a {@link Command} that executes itself.

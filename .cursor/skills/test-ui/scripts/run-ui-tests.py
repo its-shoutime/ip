@@ -19,11 +19,12 @@ class TestCase:
     aim: str
     inputs: str
     expected: str
+    seed_file: str | None = None
 
 
 CASE_HEADING = re.compile(r"^###\s+(?P<id>[^\s:]+)\s*:\s*(?P<title>.+?)\s*$", re.M)
 FIELD = re.compile(
-    r"\*\*(?P<name>Aim|Inputs|Expected output):\*\*\s*\n```(?:\w+)?\n(?P<body>.*?)```",
+    r"\*\*(?P<name>Aim|Inputs|Expected output|Seed file):\*\*\s*\n```(?:\w+)?\n(?P<body>.*?)```",
     re.S,
 )
 # Aim may be a single line without a fence.
@@ -55,6 +56,7 @@ def parse_plan(plan_text: str) -> list[TestCase]:
                 f"Test case {match.group('id')} must include Inputs and Expected output fenced blocks"
             )
 
+        seed = fields.get("Seed file")
         cases.append(
             TestCase(
                 case_id=match.group("id"),
@@ -62,9 +64,25 @@ def parse_plan(plan_text: str) -> list[TestCase]:
                 aim=aim,
                 inputs=fields["Inputs"],
                 expected=fields["Expected output"],
+                seed_file=seed if seed is not None else None,
             )
         )
     return cases
+
+
+def prepare_storage(root: Path, seed_file: str | None) -> None:
+    """Reset ./data/kiwi.txt so each case starts from a known disk state."""
+    data_dir = root / "data"
+    save_path = data_dir / "kiwi.txt"
+    if seed_file is None:
+        if save_path.exists():
+            save_path.unlink()
+        return
+    data_dir.mkdir(parents=True, exist_ok=True)
+    text = seed_file.replace("\r\n", "\n").replace("\r", "\n")
+    if text and not text.endswith("\n"):
+        text += "\n"
+    save_path.write_text(text, encoding="utf-8")
 
 
 def normalize(text: str) -> str:
@@ -166,6 +184,7 @@ def main(argv: list[str]) -> int:
         for case in cases:
             print(f"RUN {case.case_id}: {case.title}")
             print(f"Aim: {case.aim}")
+            prepare_storage(root, case.seed_file)
             try:
                 actual = run_program(root, out_dir, main_class, case.inputs)
             except RuntimeError as exc:

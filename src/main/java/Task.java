@@ -57,6 +57,25 @@ public class Task {
     }
 
     /**
+     * Returns whether this task is marked done.
+     *
+     * @return true if done
+     */
+    public boolean isDone() {
+        return isDone;
+    }
+
+    /**
+     * Returns one line for hard-disk storage, e.g. {@code T | 1 | read book}.
+     * Subclasses append extra fields after the description.
+     *
+     * @return save-file line
+     */
+    public String toSaveFormat() {
+        return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
+    }
+
+    /**
      * Returns a display string such as {@code [T][ ] read book}.
      *
      * @return formatted task text

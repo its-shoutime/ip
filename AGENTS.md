@@ -18,11 +18,18 @@ Unless the user says otherwise, assume that you are assisting a student working 
 * Keep explanations brief but instructive, supporting learning through responsible use of AI. For example:
 
   * When suggesting a Git command, briefly explain what it does.
-  * Add explanatory Javadoc comments to all classes and to nontrivial methods and fields when their purpose or behavior is not obvious.
+  * Add Javadoc following the `seedu-java-coding-standard` skill (required for all classes and public methods, with the exceptions listed there).
   * Make generated code as self-explanatory as possible, and include explanatory comments where they improve understanding.
   * When faced with a design choice, choose the simplest option that is sufficient for the requirements, while briefly explaining relevant more advanced alternatives.
 
 # Project-specific requirements
+
+## Java coding standard
+
+All Java code in this project MUST follow the SE-EDU Java coding standard (basic + intermediate).
+Whenever writing, editing, reviewing, or generating Java, read and follow the
+`seedu-java-coding-standard` skill at `.cursor/skills/seedu-java-coding-standard/SKILL.md`.
+Do not skip this skill. For topics not covered there, follow the Google Java Style Guide.
 
 ## Java version:
 

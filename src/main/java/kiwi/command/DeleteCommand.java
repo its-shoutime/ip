@@ -19,6 +19,11 @@ public class DeleteCommand extends Command {
         this.index = index;
     }
 
+    /**
+     * Deletes the task, saves the list, and shows a confirmation.
+     *
+     * {@inheritDoc}
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws KiwiException {
         if (!tasks.isValidIndex(index)) {

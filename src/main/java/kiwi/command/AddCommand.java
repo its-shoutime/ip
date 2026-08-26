@@ -18,6 +18,11 @@ public class AddCommand extends Command {
         this.task = task;
     }
 
+    /**
+     * Adds the task, saves the list, and shows a confirmation.
+     *
+     * {@inheritDoc}
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         tasks.add(task);

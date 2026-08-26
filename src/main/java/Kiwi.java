@@ -18,6 +18,8 @@ public class Kiwi {
     private static final ArrayList<Task> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
+        tasks.addAll(Storage.load());
+
         Scanner in = new Scanner(System.in);
         showWelcome();
 
@@ -147,6 +149,7 @@ public class Kiwi {
      */
     private static void addTask(Task task) {
         tasks.add(task);
+        Storage.save(tasks);
         System.out.println("Got it. I've added this task:");
         System.out.println("  " + task);
         System.out.println("Now you have " + tasks.size() + " task"
@@ -190,6 +193,7 @@ public class Kiwi {
     private static void markDone(int index) {
         Task task = tasks.get(index);
         task.markAsDone();
+        Storage.save(tasks);
         System.out.println("Marked this task as done:");
         System.out.println((index + 1) + "." + task);
     }
@@ -197,6 +201,7 @@ public class Kiwi {
     private static void markUndone(int index) {
         Task task = tasks.get(index);
         task.markAsNotDone();
+        Storage.save(tasks);
         System.out.println("Marked this task as not done yet:");
         System.out.println((index + 1) + "." + task);
     }
@@ -208,6 +213,7 @@ public class Kiwi {
      */
     private static void deleteTask(int index) {
         Task removed = tasks.remove(index);
+        Storage.save(tasks);
         System.out.println("Noted. I've removed this task:");
         System.out.println("  " + removed);
         System.out.println("Now you have " + tasks.size() + " task"

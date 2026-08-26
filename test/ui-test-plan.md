@@ -11,7 +11,8 @@ runs each test case against the program, shows the console session, and
 - **Java version:** `25`
 - **Task storage:** `ArrayList<Task>` (dynamic size; add/delete via list operations)
 - **Task kinds:** `TaskType` enum (`TODO`, `DEADLINE`, `EVENT`) for type icons `[T]` / `[D]` / `[E]`
-- **How tests are run:** compile all `*.java` in the source directory, then for each test case pipe **Inputs** to the program's stdin and compare full stdout to **Expected output**.
+- **Hard-disk file:** `./data/kiwi.txt` — loaded at startup; rewritten (via temp file + replace) whenever the list changes. Missing/unreadable save → empty list with a message. Corrupted lines are skipped with a warning; valid lines still load.
+- **How tests are run:** compile all `*.java` in the source directory, then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | Sunday`, `E | 0 | meeting | Mon 2pm | 4pm`.
 
 Suggested command (used by the skill runner):
 
@@ -26,6 +27,10 @@ Each case under `## Test cases` must include:
 1. **Aim** — purpose of the case
 2. **Inputs** — commands sent to the program (one per line)
 3. **Expected output** — exact console output for that session
+
+Optional:
+
+4. **Seed file** — contents written to `./data/kiwi.txt` before the case starts (for load/persistence tests). If omitted, the save file is deleted so the case starts with an empty disk.
 
 ## Test cases
 
@@ -658,6 +663,240 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] another
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC12: Saving is silent while the list still updates on screen
+
+**Aim:** Console behaviour is unchanged when auto-save runs after add/mark (no extra save messages on the happy path). After this session, `./data/kiwi.txt` should contain the pipe-separated lines for the remaining tasks.
+
+**Inputs:**
+```text
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+mark 1
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] read book
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [D][ ] return book (by: June 6th)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Marked this task as done:
+1.[T][X] read book
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][X] read book
+2.[D][ ] return book (by: June 6th)
+3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC13: Load saved tasks from disk at startup
+
+**Aim:** On startup, tasks previously written to `./data/kiwi.txt` appear in `list` with the correct types and done status.
+
+**Seed file:**
+```text
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+```
+
+**Inputs:**
+```text
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][X] read book
+2.[D][ ] return book (by: June 6th)
+3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC14: Loaded tasks keep numbering when adding more
+
+**Aim:** After loading two tasks from disk, a new todo becomes task 3 and the count is 3.
+
+**Seed file:**
+```text
+T | 0 | existing one
+D | 1 | existing two | Friday
+```
+
+**Inputs:**
+```text
+todo brand new
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] brand new
+Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][ ] existing one
+2.[D][X] existing two (by: Friday)
+3.[T][ ] brand new
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC15: Skip corrupted save lines and keep valid ones
+
+**Aim:** Malformed lines (wrong field count, bad done flag, unknown type) produce skip warnings and do not prevent valid tasks from loading.
+
+**Seed file:**
+```text
+T | 1 | keep me
+
+not a valid line
+D | 0 | incomplete
+D | 2 | bad done | Sunday
+T | 0 |
+D | 0 | ok deadline | Friday
+E | 0 | meet | 2pm
+X | 0 | mystery
+E | 0 | party | Mon | Tue
+```
+
+**Inputs:**
+```text
+list
+bye
+```
+
+**Expected output:**
+```text
+Skipping corrupted save line 3 (expected at least 3 fields separated by " | ")
+Skipping corrupted save line 4 (deadline lines must look like: D | 0 | description | by)
+Skipping corrupted save line 5 (done flag must be 0 or 1, found "2")
+Skipping corrupted save line 6 (expected at least 3 fields separated by " | ")
+Skipping corrupted save line 8 (event lines must look like: E | 0 | description | from | to)
+Skipping corrupted save line 9 (unknown task type "X")
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][X] keep me
+2.[D][ ] ok deadline (by: Friday)
+3.[E][ ] party (from: Mon to: Tue)
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC16: Empty save file starts with an empty list
+
+**Aim:** An existing but empty `kiwi.txt` loads as zero tasks (same as a missing file for the user).
+
+**Seed file:**
+```text
+```
+
+**Inputs:**
+```text
+list
+todo after empty file
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] after empty file
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][ ] after empty file
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!

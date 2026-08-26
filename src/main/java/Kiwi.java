@@ -100,22 +100,23 @@ public class Kiwi {
     }
 
     /**
-     * Parses {@code description /by time} and adds a deadline task.
+     * Parses {@code description /by yyyy-MM-dd} and adds a deadline task.
      *
      * @param body text after the {@code deadline} command
-     * @throws KiwiException if the description or {@code /by} part is missing
+     * @throws KiwiException if the description or {@code /by} date is missing/invalid
      */
     private static void addDeadline(String body) throws KiwiException {
         if (body.isEmpty()) {
             throw new KiwiException(
-                    "A deadline needs details — try: deadline return book /by Sunday");
+                    "A deadline needs details — try: deadline return book /by 2019-12-02");
         }
         String[] parts = body.split(" /by ", 2);
         if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
             throw new KiwiException(
-                    "Deadlines need both a description and /by <when> — e.g. deadline return book /by Sunday");
+                    "Deadlines need both a description and /by yyyy-MM-dd — "
+                            + "e.g. deadline return book /by 2019-12-02");
         }
-        addTask(new Deadline(parts[0].trim(), parts[1].trim()));
+        addTask(new Deadline(parts[0].trim(), Deadline.parseDate(parts[1].trim())));
     }
 
     /**

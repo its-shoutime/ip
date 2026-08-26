@@ -12,7 +12,8 @@ runs each test case against the program, shows the console session, and
 - **Task storage:** `ArrayList<Task>` (dynamic size; add/delete via list operations)
 - **Task kinds:** `TaskType` enum (`TODO`, `DEADLINE`, `EVENT`) for type icons `[T]` / `[D]` / `[E]`
 - **Hard-disk file:** `./data/kiwi.txt` — loaded at startup; rewritten (via temp file + replace) whenever the list changes. Missing/unreadable save → empty list with a message. Corrupted lines are skipped with a warning; valid lines still load.
-- **How tests are run:** compile all `*.java` in the source directory, then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | Sunday`, `E | 0 | meeting | Mon 2pm | 4pm`.
+- **Deadline dates:** accepted/stored as `yyyy-MM-dd` (e.g. `2019-12-02`), shown as `MMM dd yyyy` (e.g. `Dec 02 2019`).
+- **How tests are run:** compile all `*.java` in the source directory, then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | Mon 2pm | 4pm`.
 
 Suggested command (used by the skill runner):
 
@@ -36,12 +37,12 @@ Optional:
 
 ### TC01: Add todo, deadline, and event then list
 
-**Aim:** Check that `todo`, `deadline`, and `event` create typed tasks with correct icons and date strings, and that `list` shows them.
+**Aim:** Check that `todo`, `deadline` (yyyy-MM-dd → MMM dd yyyy), and `event` create typed tasks, and that `list` shows them.
 
 **Inputs:**
 ```text
 todo borrow book
-deadline return book /by Sunday
+deadline return book /by 2019-12-02
 event project meeting /from Mon 2pm /to 4pm
 list
 bye
@@ -65,7 +66,7 @@ Now you have 1 task in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [D][ ] return book (by: Sunday)
+  [D][ ] return book (by: Dec 02 2019)
 Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -76,7 +77,7 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] borrow book
-2.[D][ ] return book (by: Sunday)
+2.[D][ ] return book (by: Dec 02 2019)
 3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
@@ -135,9 +136,9 @@ Bye. Hope to see you again soon!
 ____________________________________________________________
 ```
 
-### TC03: Deadline with free-form /by text
+### TC03: Reject non yyyy-MM-dd deadline dates
 
-**Aim:** Dates/times are stored as plain strings, including odd values like `no idea :-p`.
+**Aim:** Free-form `/by` text is no longer accepted; Kiwi asks for `yyyy-MM-dd` and does not add the task.
 
 **Inputs:**
 ```text
@@ -158,13 +159,10 @@ Hello! I'm Kiwi.
 What can I do for you?
 ____________________________________________________________
 ____________________________________________________________
-Got it. I've added this task:
-  [D][ ] do homework (by: no idea :-p)
-Now you have 1 task in the list.
+Please give the deadline as yyyy-MM-dd, e.g. deadline return book /by 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
-1.[D][ ] do homework (by: no idea :-p)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!
@@ -248,7 +246,7 @@ Hello! I'm Kiwi.
 What can I do for you?
 ____________________________________________________________
 ____________________________________________________________
-A deadline needs details — try: deadline return book /by Sunday
+A deadline needs details — try: deadline return book /by 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
 Events need /from and /to — e.g. event meeting /from Mon 2pm /to 4pm
@@ -291,7 +289,7 @@ todo
 todo buy milk
 list
 blah
-deadline submit report /by Friday
+deadline submit report /by 2019-10-18
 list
 bye
 ```
@@ -324,13 +322,13 @@ Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark,
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [D][ ] submit report (by: Friday)
+  [D][ ] submit report (by: Oct 18 2019)
 Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] buy milk
-2.[D][ ] submit report (by: Friday)
+2.[D][ ] submit report (by: Oct 18 2019)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!
@@ -344,8 +342,8 @@ ____________________________________________________________
 **Inputs:**
 ```text
 deadline return book /by
-deadline /by Sunday
-deadline return book /by Sunday
+deadline /by 2019-12-02
+deadline return book /by 2019-12-02
 event
 event meeting /from 2pm /to 4pm
 list
@@ -364,14 +362,14 @@ Hello! I'm Kiwi.
 What can I do for you?
 ____________________________________________________________
 ____________________________________________________________
-Deadlines need both a description and /by <when> — e.g. deadline return book /by Sunday
+Deadlines need both a description and /by yyyy-MM-dd — e.g. deadline return book /by 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
-Deadlines need both a description and /by <when> — e.g. deadline return book /by Sunday
+Deadlines need both a description and /by yyyy-MM-dd — e.g. deadline return book /by 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [D][ ] return book (by: Sunday)
+  [D][ ] return book (by: Dec 02 2019)
 Now you have 1 task in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -384,7 +382,7 @@ Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
-1.[D][ ] return book (by: Sunday)
+1.[D][ ] return book (by: Dec 02 2019)
 2.[E][ ] meeting (from: 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
@@ -498,7 +496,7 @@ ____________________________________________________________
 A todo needs a description — try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
-A deadline needs details — try: deadline return book /by Sunday
+A deadline needs details — try: deadline return book /by 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
 An event needs details — try: event meeting /from Mon 2pm /to 4pm
@@ -533,7 +531,7 @@ ____________________________________________________________
 **Inputs:**
 ```text
 todo read book
-deadline return book /by June 6th
+deadline return book /by 2019-06-06
 event project meeting /from Aug 6th 2pm /to 4pm
 todo join sports club
 todo borrow book
@@ -561,7 +559,7 @@ Now you have 1 task in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [D][ ] return book (by: June 6th)
+  [D][ ] return book (by: Jun 06 2019)
 Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -582,7 +580,7 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] read book
-2.[D][ ] return book (by: June 6th)
+2.[D][ ] return book (by: Jun 06 2019)
 3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
 4.[T][ ] join sports club
 5.[T][ ] borrow book
@@ -595,7 +593,7 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] read book
-2.[D][ ] return book (by: June 6th)
+2.[D][ ] return book (by: Jun 06 2019)
 3.[T][ ] join sports club
 4.[T][ ] borrow book
 ____________________________________________________________
@@ -676,7 +674,7 @@ ____________________________________________________________
 **Inputs:**
 ```text
 todo read book
-deadline return book /by June 6th
+deadline return book /by 2019-06-06
 event project meeting /from Aug 6th 2pm /to 4pm
 mark 1
 list
@@ -701,7 +699,7 @@ Now you have 1 task in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [D][ ] return book (by: June 6th)
+  [D][ ] return book (by: Jun 06 2019)
 Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -716,7 +714,7 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][X] read book
-2.[D][ ] return book (by: June 6th)
+2.[D][ ] return book (by: Jun 06 2019)
 3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
@@ -731,7 +729,7 @@ ____________________________________________________________
 **Seed file:**
 ```text
 T | 1 | read book
-D | 0 | return book | June 6th
+D | 0 | return book | 2019-06-06
 E | 0 | project meeting | Aug 6th 2pm | 4pm
 ```
 
@@ -755,7 +753,7 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][X] read book
-2.[D][ ] return book (by: June 6th)
+2.[D][ ] return book (by: Jun 06 2019)
 3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
@@ -770,7 +768,7 @@ ____________________________________________________________
 **Seed file:**
 ```text
 T | 0 | existing one
-D | 1 | existing two | Friday
+D | 1 | existing two | 2019-10-18
 ```
 
 **Inputs:**
@@ -799,7 +797,7 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] existing one
-2.[D][X] existing two (by: Friday)
+2.[D][X] existing two (by: Oct 18 2019)
 3.[T][ ] brand new
 ____________________________________________________________
 ____________________________________________________________
@@ -817,9 +815,9 @@ T | 1 | keep me
 
 not a valid line
 D | 0 | incomplete
-D | 2 | bad done | Sunday
+D | 2 | bad done | 2019-12-02
 T | 0 |
-D | 0 | ok deadline | Friday
+D | 0 | ok deadline | 2019-10-18
 E | 0 | meet | 2pm
 X | 0 | mystery
 E | 0 | party | Mon | Tue
@@ -834,7 +832,7 @@ bye
 **Expected output:**
 ```text
 Skipping corrupted save line 3 (expected at least 3 fields separated by " | ")
-Skipping corrupted save line 4 (deadline lines must look like: D | 0 | description | by)
+Skipping corrupted save line 4 (deadline lines must look like: D | 0 | description | yyyy-MM-dd)
 Skipping corrupted save line 5 (done flag must be 0 or 1, found "2")
 Skipping corrupted save line 6 (expected at least 3 fields separated by " | ")
 Skipping corrupted save line 8 (event lines must look like: E | 0 | description | from | to)
@@ -851,7 +849,7 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][X] keep me
-2.[D][ ] ok deadline (by: Friday)
+2.[D][ ] ok deadline (by: Oct 18 2019)
 3.[E][ ] party (from: Mon to: Tue)
 ____________________________________________________________
 ____________________________________________________________

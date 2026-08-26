@@ -12,8 +12,8 @@ runs each test case against the program, shows the console session, and
 - **Task storage:** `ArrayList<Task>` (dynamic size; add/delete via list operations)
 - **Task kinds:** `TaskType` enum (`TODO`, `DEADLINE`, `EVENT`) for type icons `[T]` / `[D]` / `[E]`
 - **Hard-disk file:** `./data/kiwi.txt` — loaded at startup; rewritten (via temp file + replace) whenever the list changes. Missing/unreadable save → empty list with a message. Corrupted lines are skipped with a warning; valid lines still load.
-- **Deadline dates:** accepted/stored as `yyyy-MM-dd` (e.g. `2019-12-02`), shown as `MMM dd yyyy` (e.g. `Dec 02 2019`).
-- **How tests are run:** compile all `*.java` in the source directory, then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | Mon 2pm | 4pm`.
+- **Deadline/event dates:** accepted/stored as `yyyy-MM-dd`, shown as `MMM dd yyyy`. Command `on yyyy-MM-dd` lists deadlines due that day and events whose range covers it.
+- **How tests are run:** compile all `*.java` in the source directory, then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | 2019-10-04 | 2019-10-11`.
 
 Suggested command (used by the skill runner):
 
@@ -43,7 +43,7 @@ Optional:
 ```text
 todo borrow book
 deadline return book /by 2019-12-02
-event project meeting /from Mon 2pm /to 4pm
+event project meeting /from 2019-12-01 /to 2019-12-03
 list
 bye
 ```
@@ -71,14 +71,14 @@ Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [E][ ] project meeting (from: Mon 2pm to: 4pm)
+  [E][ ] project meeting (from: Dec 01 2019 to: Dec 03 2019)
 Now you have 3 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] borrow book
 2.[D][ ] return book (by: Dec 02 2019)
-3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+3.[E][ ] project meeting (from: Dec 01 2019 to: Dec 03 2019)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!
@@ -159,7 +159,7 @@ Hello! I'm Kiwi.
 What can I do for you?
 ____________________________________________________________
 ____________________________________________________________
-Please give the deadline as yyyy-MM-dd, e.g. deadline return book /by 2019-12-02
+Please use a date as yyyy-MM-dd, e.g. 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
@@ -198,7 +198,7 @@ ____________________________________________________________
 A todo needs a description — try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, delete, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
@@ -249,7 +249,7 @@ ____________________________________________________________
 A deadline needs details — try: deadline return book /by 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
-Events need /from and /to — e.g. event meeting /from Mon 2pm /to 4pm
+Events need /from and /to as yyyy-MM-dd — e.g. event meeting /from 2019-10-04 /to 2019-10-11
 ____________________________________________________________
 ____________________________________________________________
 There is no task number 1 in your list.
@@ -318,7 +318,7 @@ Here are the tasks in your list:
 1.[T][ ] buy milk
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, list, mark, unmark, delete, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
@@ -345,7 +345,7 @@ deadline return book /by
 deadline /by 2019-12-02
 deadline return book /by 2019-12-02
 event
-event meeting /from 2pm /to 4pm
+event meeting /from 2019-10-04 /to 2019-10-04
 list
 bye
 ```
@@ -373,17 +373,17 @@ Got it. I've added this task:
 Now you have 1 task in the list.
 ____________________________________________________________
 ____________________________________________________________
-An event needs details — try: event meeting /from Mon 2pm /to 4pm
+An event needs details — try: event meeting /from 2019-10-04 /to 2019-10-11
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [E][ ] meeting (from: 2pm to: 4pm)
+  [E][ ] meeting (from: Oct 04 2019 to: Oct 04 2019)
 Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[D][ ] return book (by: Dec 02 2019)
-2.[E][ ] meeting (from: 2pm to: 4pm)
+2.[E][ ] meeting (from: Oct 04 2019 to: Oct 04 2019)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!
@@ -499,7 +499,7 @@ ____________________________________________________________
 A deadline needs details — try: deadline return book /by 2019-12-02
 ____________________________________________________________
 ____________________________________________________________
-An event needs details — try: event meeting /from Mon 2pm /to 4pm
+An event needs details — try: event meeting /from 2019-10-04 /to 2019-10-11
 ____________________________________________________________
 ____________________________________________________________
 Please give a task number, e.g. mark 1
@@ -532,7 +532,7 @@ ____________________________________________________________
 ```text
 todo read book
 deadline return book /by 2019-06-06
-event project meeting /from Aug 6th 2pm /to 4pm
+event project meeting /from 2019-08-06 /to 2019-08-06
 todo join sports club
 todo borrow book
 list
@@ -564,7 +564,7 @@ Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+  [E][ ] project meeting (from: Aug 06 2019 to: Aug 06 2019)
 Now you have 3 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -581,13 +581,13 @@ ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] read book
 2.[D][ ] return book (by: Jun 06 2019)
-3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+3.[E][ ] project meeting (from: Aug 06 2019 to: Aug 06 2019)
 4.[T][ ] join sports club
 5.[T][ ] borrow book
 ____________________________________________________________
 ____________________________________________________________
 Noted. I've removed this task:
-  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+  [E][ ] project meeting (from: Aug 06 2019 to: Aug 06 2019)
 Now you have 4 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -675,7 +675,7 @@ ____________________________________________________________
 ```text
 todo read book
 deadline return book /by 2019-06-06
-event project meeting /from Aug 6th 2pm /to 4pm
+event project meeting /from 2019-08-06 /to 2019-08-06
 mark 1
 list
 bye
@@ -704,7 +704,7 @@ Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+  [E][ ] project meeting (from: Aug 06 2019 to: Aug 06 2019)
 Now you have 3 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -715,7 +715,7 @@ ____________________________________________________________
 Here are the tasks in your list:
 1.[T][X] read book
 2.[D][ ] return book (by: Jun 06 2019)
-3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+3.[E][ ] project meeting (from: Aug 06 2019 to: Aug 06 2019)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!
@@ -730,7 +730,7 @@ ____________________________________________________________
 ```text
 T | 1 | read book
 D | 0 | return book | 2019-06-06
-E | 0 | project meeting | Aug 6th 2pm | 4pm
+E | 0 | project meeting | 2019-08-06 | 2019-08-06
 ```
 
 **Inputs:**
@@ -754,7 +754,7 @@ ____________________________________________________________
 Here are the tasks in your list:
 1.[T][X] read book
 2.[D][ ] return book (by: Jun 06 2019)
-3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+3.[E][ ] project meeting (from: Aug 06 2019 to: Aug 06 2019)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!
@@ -818,9 +818,9 @@ D | 0 | incomplete
 D | 2 | bad done | 2019-12-02
 T | 0 |
 D | 0 | ok deadline | 2019-10-18
-E | 0 | meet | 2pm
+E | 0 | meet | 2019-08-06
 X | 0 | mystery
-E | 0 | party | Mon | Tue
+E | 0 | party | 2019-12-01 | 2019-12-02
 ```
 
 **Inputs:**
@@ -835,7 +835,7 @@ Skipping corrupted save line 3 (expected at least 3 fields separated by " | ")
 Skipping corrupted save line 4 (deadline lines must look like: D | 0 | description | yyyy-MM-dd)
 Skipping corrupted save line 5 (done flag must be 0 or 1, found "2")
 Skipping corrupted save line 6 (expected at least 3 fields separated by " | ")
-Skipping corrupted save line 8 (event lines must look like: E | 0 | description | from | to)
+Skipping corrupted save line 8 (event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd)
 Skipping corrupted save line 9 (unknown task type "X")
 ____________________________________________________________
  _  ___          _ 
@@ -850,7 +850,7 @@ ____________________________________________________________
 Here are the tasks in your list:
 1.[T][X] keep me
 2.[D][ ] ok deadline (by: Oct 18 2019)
-3.[E][ ] party (from: Mon to: Tue)
+3.[E][ ] party (from: Dec 01 2019 to: Dec 02 2019)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!
@@ -895,6 +895,71 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1.[T][ ] after empty file
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC17: List deadlines and events on a specific date
+
+**Aim:** `on yyyy-MM-dd` shows deadlines due that day and events whose inclusive range covers it; to-dos are omitted; unrelated dates show "None found."
+
+**Inputs:**
+```text
+todo ignore me
+deadline return book /by 2019-12-02
+event project meeting /from 2019-12-01 /to 2019-12-03
+deadline other /by 2019-10-15
+on 2019-12-02
+on 2019-10-15
+on 2020-01-01
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] ignore me
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [D][ ] return book (by: Dec 02 2019)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [E][ ] project meeting (from: Dec 01 2019 to: Dec 03 2019)
+Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [D][ ] other (by: Oct 15 2019)
+Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Here are the deadlines/events on Dec 02 2019:
+2.[D][ ] return book (by: Dec 02 2019)
+3.[E][ ] project meeting (from: Dec 01 2019 to: Dec 03 2019)
+____________________________________________________________
+____________________________________________________________
+Here are the deadlines/events on Oct 15 2019:
+4.[D][ ] other (by: Oct 15 2019)
+____________________________________________________________
+____________________________________________________________
+Here are the deadlines/events on Jan 01 2020:
+None found.
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!

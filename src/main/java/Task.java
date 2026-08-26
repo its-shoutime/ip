@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 /**
  * Represents a task with a description, a {@link TaskType}, and a done/not-done status.
  * Subclasses may add extra details such as deadline or event times.
@@ -54,6 +56,17 @@ public class Task {
      */
     public TaskType getType() {
         return type;
+    }
+
+    /**
+     * Returns whether this task is associated with the given calendar date.
+     * Default: to-dos have no date, so they never match.
+     *
+     * @param date date to check
+     * @return true if the task occurs on {@code date}
+     */
+    public boolean occursOn(LocalDate date) {
+        return false;
     }
 
     /**

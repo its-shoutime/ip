@@ -150,19 +150,19 @@ public class Storage {
             if (by.isEmpty()) {
                 throw new KiwiException("deadline /by value cannot be empty");
             }
-            task = new Deadline(description, Deadline.parseDate(by));
+            task = new Deadline(description, KiwiDate.parse(by));
             break;
         case "E":
             if (parts.length != 5) {
                 throw new KiwiException(
-                        "event lines must look like: E | 0 | description | from | to");
+                        "event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd");
             }
-            String from = parts[3].trim();
-            String to = parts[4].trim();
-            if (from.isEmpty() || to.isEmpty()) {
+            String fromText = parts[3].trim();
+            String toText = parts[4].trim();
+            if (fromText.isEmpty() || toText.isEmpty()) {
                 throw new KiwiException("event from/to values cannot be empty");
             }
-            task = new Event(description, from, to);
+            task = new Event(description, KiwiDate.parse(fromText), KiwiDate.parse(toText));
             break;
         default:
             throw new KiwiException("unknown task type \"" + type + "\"");

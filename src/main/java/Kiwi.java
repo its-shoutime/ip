@@ -1,255 +1,133 @@
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Scanner;
-
 /**
  * Kiwi is a simple chatbot that stores to-dos, deadlines, and events in memory,
  * lists them, and can mark, unmark, or delete them.
+ * <p>
+ * This class wires {@link Ui}, {@link Parser}, {@link TaskList}, and {@link Storage}
+ * together: it reads input, asks the parser what was meant, then updates the list
+ * and talks to the user.
  */
 public class Kiwi {
-    private static final String LINE = "____________________________________________________________";
+    /** Default save file used when launching from {@link #main(String[])}. */
+    public static final String DEFAULT_FILE_PATH = "./data/kiwi.txt";
 
-    private static final String BANNER = " _  ___          _ \n"
-            + "| |/ (_)_      _(_)\n"
-            + "| ' /| \\ \\ /\\ / / |\n"
-            + "| . \\| |\\ V  V /| |\n"
-            + "|_|\\_\\_| \\_/\\_/ |_|\n";
+    private final Storage storage;
+    private final TaskList tasks;
+    private final Ui ui;
 
-    /** Dynamically sized list of tasks (grows/shrinks as the user adds or deletes). */
-    private static final ArrayList<Task> tasks = new ArrayList<>();
+    /**
+     * Creates a Kiwi chatbot that loads tasks from {@code filePath}.
+     *
+     * @param filePath path to the task save file
+     */
+    public Kiwi(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+        tasks = new TaskList(storage.load());
+    }
 
-    public static void main(String[] args) {
-        tasks.addAll(Storage.load());
+    /**
+     * Runs the chatbot loop until the user types {@code bye}.
+     */
+    public void run() {
+        ui.showWelcome();
 
-        Scanner in = new Scanner(System.in);
-        showWelcome();
-
-        String input = in.nextLine();
+        String input = ui.readCommand();
         while (!input.equals("bye")) {
-            printLine();
+            ui.showLine();
             try {
-                handleCommand(input);
+                execute(Parser.parse(input));
             } catch (KiwiException e) {
-                System.out.println(e.getMessage());
+                ui.showError(e.getMessage());
             }
-            printLine();
-            input = in.nextLine();
+            ui.showLine();
+            input = ui.readCommand();
         }
 
-        showGoodbye();
+        ui.showGoodbye();
     }
 
     /**
-     * Runs one user command, or throws {@link KiwiException} for bad input.
+     * Carries out one already-parsed command: update tasks, save, and show feedback.
      *
-     * @param input full line typed by the user
-     * @throws KiwiException if the command is unknown or incomplete
+     * @param command structured command from {@link Parser#parse(String)}
+     * @throws KiwiException if a task number is out of range
      */
-    private static void handleCommand(String input) throws KiwiException {
-        if (input.equals("list")) {
-            listTasks();
-        } else if (input.equals("todo") || input.startsWith("todo ")) {
-            addTodo(input.equals("todo") ? "" : input.substring("todo ".length()).trim());
-        } else if (input.equals("deadline") || input.startsWith("deadline ")) {
-            addDeadline(input.equals("deadline") ? "" : input.substring("deadline ".length()).trim());
-        } else if (input.equals("event") || input.startsWith("event ")) {
-            addEvent(input.equals("event") ? "" : input.substring("event ".length()).trim());
-        } else if (input.equals("on") || input.startsWith("on ")) {
-            listTasksOn(input.equals("on") ? "" : input.substring("on ".length()).trim());
-        } else if (input.equals("mark") || input.startsWith("mark ")) {
-            markDone(parseTaskNumber(input, "mark"));
-        } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-            markUndone(parseTaskNumber(input, "unmark"));
-        } else if (input.equals("delete") || input.startsWith("delete ")) {
-            deleteTask(parseTaskNumber(input, "delete"));
-        } else {
-            throw new KiwiException(
-                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, "
-                            + "mark, unmark, delete, or bye.");
-        }
-    }
-
-    /** Prints the horizontal divider used between chatbot messages. */
-    private static void printLine() {
-        System.out.println(LINE);
-    }
-
-    /** Shows the banner and welcome message. */
-    private static void showWelcome() {
-        printLine();
-        System.out.print(BANNER);
-        System.out.println("Hello! I'm Kiwi.");
-        System.out.println("What can I do for you?");
-        printLine();
-    }
-
-    /** Shows the goodbye message and exits the chat. */
-    private static void showGoodbye() {
-        printLine();
-        System.out.println("Bye. Hope to see you again soon!");
-        printLine();
-    }
-
-    /**
-     * Adds a to-do if the description is present.
-     *
-     * @param description task description after the {@code todo} command
-     * @throws KiwiException if the description is empty
-     */
-    private static void addTodo(String description) throws KiwiException {
-        if (description.isEmpty()) {
-            throw new KiwiException("A todo needs a description — try: todo borrow book");
-        }
-        addTask(new Todo(description));
-    }
-
-    /**
-     * Parses {@code description /by yyyy-MM-dd} and adds a deadline task.
-     *
-     * @param body text after the {@code deadline} command
-     * @throws KiwiException if the description or {@code /by} date is missing/invalid
-     */
-    private static void addDeadline(String body) throws KiwiException {
-        if (body.isEmpty()) {
-            throw new KiwiException(
-                    "A deadline needs details — try: deadline return book /by 2019-12-02");
-        }
-        String[] parts = body.split(" /by ", 2);
-        if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
-            throw new KiwiException(
-                    "Deadlines need both a description and /by yyyy-MM-dd — "
-                            + "e.g. deadline return book /by 2019-12-02");
-        }
-        addTask(new Deadline(parts[0].trim(), KiwiDate.parse(parts[1].trim())));
-    }
-
-    /**
-     * Parses {@code description /from yyyy-MM-dd /to yyyy-MM-dd} and adds an event.
-     *
-     * @param body text after the {@code event} command
-     * @throws KiwiException if description or dates are missing/invalid
-     */
-    private static void addEvent(String body) throws KiwiException {
-        if (body.isEmpty()) {
-            throw new KiwiException(
-                    "An event needs details — try: event meeting /from 2019-10-04 /to 2019-10-11");
-        }
-        String[] fromSplit = body.split(" /from ", 2);
-        if (fromSplit.length < 2 || fromSplit[0].trim().isEmpty()) {
-            throw new KiwiException(
-                    "Events need /from and /to as yyyy-MM-dd — "
-                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
-        }
-        String[] toSplit = fromSplit[1].split(" /to ", 2);
-        if (toSplit.length < 2 || toSplit[0].trim().isEmpty() || toSplit[1].trim().isEmpty()) {
-            throw new KiwiException(
-                    "Events need /from and /to as yyyy-MM-dd — "
-                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
-        }
-        LocalDate from = KiwiDate.parse(toSplit[0].trim());
-        LocalDate to = KiwiDate.parse(toSplit[1].trim());
-        addTask(new Event(fromSplit[0].trim(), from, to));
-    }
-
-    /**
-     * Stores a task and prints the standard "Got it" confirmation.
-     *
-     * @param task task to add
-     */
-    private static void addTask(Task task) {
-        tasks.add(task);
-        Storage.save(tasks);
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + task);
-        System.out.println("Now you have " + tasks.size() + " task"
-                + (tasks.size() == 1 ? "" : "s") + " in the list.");
-    }
-
-    /** Prints all stored tasks with 1-based numbering. */
-    private static void listTasks() {
-        System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.get(i));
+    private void execute(Parser.ParsedCommand command) throws KiwiException {
+        switch (command.getType()) {
+        case LIST:
+            ui.showTaskList(tasks);
+            break;
+        case TODO:
+        case DEADLINE:
+        case EVENT:
+            addTask(command.getTask());
+            break;
+        case ON:
+            ui.showTasksOn(command.getDate(), tasks);
+            break;
+        case MARK:
+            markDone(requireValidIndex(command.getIndex()));
+            break;
+        case UNMARK:
+            markUndone(requireValidIndex(command.getIndex()));
+            break;
+        case DELETE:
+            deleteTask(requireValidIndex(command.getIndex()));
+            break;
+        default:
+            throw new KiwiException("Unhandled command type: " + command.getType());
         }
     }
 
     /**
-     * Prints deadlines due on {@code dateText} and events whose range covers that day.
+     * Ensures {@code index} refers to an existing task.
      *
-     * @param dateText {@code yyyy-MM-dd} date
-     * @throws KiwiException if the date is missing or invalid
+     * @param index 0-based index from the parser
+     * @return the same index if valid
+     * @throws KiwiException if there is no task at that number
      */
-    private static void listTasksOn(String dateText) throws KiwiException {
-        if (dateText.isEmpty()) {
-            throw new KiwiException("Please give a date, e.g. on 2019-12-02");
-        }
-        LocalDate date = KiwiDate.parse(dateText);
-        System.out.println("Here are the deadlines/events on " + KiwiDate.format(date) + ":");
-        int shown = 0;
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            if (task.occursOn(date)) {
-                System.out.println((i + 1) + "." + task);
-                shown++;
-            }
-        }
-        if (shown == 0) {
-            System.out.println("None found.");
-        }
-    }
-
-    /**
-     * Reads the 1-based task number from a mark/unmark/delete command.
-     *
-     * @param input   full command line
-     * @param command {@code mark}, {@code unmark}, or {@code delete}
-     * @return 0-based index into {@link #tasks}
-     * @throws KiwiException if the number is missing, not an integer, or out of range
-     */
-    private static int parseTaskNumber(String input, String command) throws KiwiException {
-        String[] parts = input.trim().split("\\s+");
-        if (parts.length < 2) {
-            throw new KiwiException("Please give a task number, e.g. " + command + " 1");
-        }
-        int index;
-        try {
-            index = Integer.parseInt(parts[1]) - 1;
-        } catch (NumberFormatException e) {
-            throw new KiwiException("That task number doesn't look like a number: " + parts[1]);
-        }
-        if (index < 0 || index >= tasks.size()) {
+    private int requireValidIndex(int index) throws KiwiException {
+        if (!tasks.isValidIndex(index)) {
             throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
         }
         return index;
     }
 
-    private static void markDone(int index) {
-        Task task = tasks.get(index);
-        task.markAsDone();
-        Storage.save(tasks);
-        System.out.println("Marked this task as done:");
-        System.out.println((index + 1) + "." + task);
+    /**
+     * Stores a task, saves to disk, and prints the standard "Got it" confirmation.
+     *
+     * @param task task to add
+     */
+    private void addTask(Task task) {
+        tasks.add(task);
+        storage.save(tasks.getTasks());
+        ui.showTaskAdded(task, tasks.size());
     }
 
-    private static void markUndone(int index) {
-        Task task = tasks.get(index);
-        task.markAsNotDone();
-        Storage.save(tasks);
-        System.out.println("Marked this task as not done yet:");
-        System.out.println((index + 1) + "." + task);
+    private void markDone(int index) {
+        tasks.markDone(index);
+        storage.save(tasks.getTasks());
+        ui.showMarked(index + 1, tasks.get(index));
+    }
+
+    private void markUndone(int index) {
+        tasks.markNotDone(index);
+        storage.save(tasks.getTasks());
+        ui.showUnmarked(index + 1, tasks.get(index));
     }
 
     /**
-     * Removes the task at the given index ({@link ArrayList#remove(int)} shifts later items).
+     * Removes the task at the given index, saves, and confirms to the user.
      *
      * @param index 0-based position of the task to remove
      */
-    private static void deleteTask(int index) {
-        Task removed = tasks.remove(index);
-        Storage.save(tasks);
-        System.out.println("Noted. I've removed this task:");
-        System.out.println("  " + removed);
-        System.out.println("Now you have " + tasks.size() + " task"
-                + (tasks.size() == 1 ? "" : "s") + " in the list.");
+    private void deleteTask(int index) {
+        Task removed = tasks.delete(index);
+        storage.save(tasks.getTasks());
+        ui.showTaskDeleted(removed, tasks.size());
+    }
+
+    public static void main(String[] args) {
+        new Kiwi(DEFAULT_FILE_PATH).run();
     }
 }

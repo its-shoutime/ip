@@ -17,7 +17,7 @@ public enum TaskType {
     /**
      * Returns the letter shown in list output, e.g. {@code T} for a to-do.
      *
-     * @return type icon letter
+     * @return type icon letter.
      */
     public String getIcon() {
         return icon;
@@ -26,7 +26,7 @@ public enum TaskType {
     /**
      * Returns the bracketed type label, e.g. {@code [T]}.
      *
-     * @return formatted type tag
+     * @return formatted type tag.
      */
     @Override
     public String toString() {

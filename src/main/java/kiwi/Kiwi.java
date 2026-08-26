@@ -22,7 +22,7 @@ public class Kiwi {
     /**
      * Creates a Kiwi chatbot that loads tasks from {@code filePath}.
      *
-     * @param filePath path to the task save file
+     * @param filePath path to the task save file.
      */
     public Kiwi(String filePath) {
         ui = new Ui();
@@ -40,9 +40,9 @@ public class Kiwi {
             try {
                 String fullCommand = ui.readCommand();
                 ui.showLine();
-                Command c = Parser.parse(fullCommand);
-                c.execute(tasks, ui, storage);
-                isExit = c.isExit();
+                Command command = Parser.parse(fullCommand);
+                command.execute(tasks, ui, storage);
+                isExit = command.isExit();
             } catch (KiwiException e) {
                 ui.showError(e.getMessage());
             } finally {
@@ -54,7 +54,7 @@ public class Kiwi {
     /**
      * Starts Kiwi using the default save file {@link #DEFAULT_FILE_PATH}.
      *
-     * @param args command-line arguments (unused)
+     * @param args command-line arguments (unused).
      */
     public static void main(String[] args) {
         new Kiwi(DEFAULT_FILE_PATH).run();

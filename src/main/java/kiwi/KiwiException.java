@@ -7,7 +7,7 @@ public class KiwiException extends Exception {
     /**
      * Creates an exception with a message to show the user.
      *
-     * @param message friendly error text
+     * @param message friendly error text.
      */
     public KiwiException(String message) {
         super(message);

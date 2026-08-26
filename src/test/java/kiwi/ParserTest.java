@@ -7,22 +7,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import kiwi.command.AddCommand;
 import kiwi.command.Command;
 import kiwi.command.DeleteCommand;
 import kiwi.command.ExitCommand;
 import kiwi.command.ListCommand;
 import kiwi.command.MarkCommand;
+import kiwi.command.OnCommand;
 import kiwi.command.UnmarkCommand;
 import kiwi.task.Deadline;
 import kiwi.task.Event;
 import kiwi.task.TaskList;
 import kiwi.task.Todo;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Unit tests for {@link Parser#parse(String)}.
@@ -150,7 +153,7 @@ class ParserTest {
 
         @Test
         void parse_validOnDate_returnsOnCommand() throws KiwiException {
-            assertInstanceOf(kiwi.command.OnCommand.class, Parser.parse("on 2019-12-02"));
+            assertInstanceOf(OnCommand.class, Parser.parse("on 2019-12-02"));
         }
 
         @Test

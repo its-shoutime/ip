@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+
 import kiwi.task.Deadline;
 import kiwi.task.Event;
 import kiwi.task.KiwiDate;
@@ -26,7 +27,7 @@ public class Storage {
     /**
      * Creates storage that reads/writes the given file (relative or absolute).
      *
-     * @param filePath path to the save file, e.g. {@code ./data/kiwi.txt}
+     * @param filePath path to the save file, e.g. {@code ./data/kiwi.txt}.
      */
     public Storage(String filePath) {
         this.filePath = filePath;
@@ -40,7 +41,7 @@ public class Storage {
      * Writes every task to the save file, creating the parent directory if needed.
      * Uses a temp file then replace so a crash mid-write is less likely to wipe the save.
      *
-     * @param tasks current in-memory task list
+     * @param tasks current in-memory task list.
      */
     public void save(ArrayList<Task> tasks) {
         try {
@@ -72,7 +73,7 @@ public class Storage {
      * Missing file → empty list. Unreadable path or I/O errors → empty list with a message.
      * Blank lines are ignored; corrupted lines are skipped with a warning.
      *
-     * @return tasks restored from disk (may be empty)
+     * @return tasks restored from disk (may be empty).
      */
     public ArrayList<Task> load() {
         ArrayList<Task> loaded = new ArrayList<>();
@@ -128,9 +129,9 @@ public class Storage {
      * {@code D | 0 | description | yyyy-MM-dd},
      * {@code E | 0 | description | from | to}.
      *
-     * @param line one non-blank line from the save file
-     * @return the parsed task
-     * @throws KiwiException if the line is malformed
+     * @param line one non-blank line from the save file.
+     * @return the parsed task.
+     * @throws KiwiException If the line is malformed.
      */
     private static Task parseLine(String line) throws KiwiException {
         // Keep empty trailing fields so "D | 0 | go | " is detected as incomplete.
@@ -153,37 +154,37 @@ public class Storage {
         boolean isDone = doneFlag.equals("1");
         Task task;
         switch (type) {
-        case "T":
-            if (parts.length != 3) {
-                throw new KiwiException("todo lines must look like: T | 0 | description");
-            }
-            task = new Todo(description);
-            break;
-        case "D":
-            if (parts.length != 4) {
-                throw new KiwiException(
-                        "deadline lines must look like: D | 0 | description | yyyy-MM-dd");
-            }
-            String by = parts[3].trim();
-            if (by.isEmpty()) {
-                throw new KiwiException("deadline /by value cannot be empty");
-            }
-            task = new Deadline(description, KiwiDate.parse(by));
-            break;
-        case "E":
-            if (parts.length != 5) {
-                throw new KiwiException(
-                        "event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd");
-            }
-            String fromText = parts[3].trim();
-            String toText = parts[4].trim();
-            if (fromText.isEmpty() || toText.isEmpty()) {
-                throw new KiwiException("event from/to values cannot be empty");
-            }
-            task = new Event(description, KiwiDate.parse(fromText), KiwiDate.parse(toText));
-            break;
-        default:
-            throw new KiwiException("unknown task type \"" + type + "\"");
+            case "T":
+                if (parts.length != 3) {
+                    throw new KiwiException("todo lines must look like: T | 0 | description");
+                }
+                task = new Todo(description);
+                break;
+            case "D":
+                if (parts.length != 4) {
+                    throw new KiwiException(
+                            "deadline lines must look like: D | 0 | description | yyyy-MM-dd");
+                }
+                String by = parts[3].trim();
+                if (by.isEmpty()) {
+                    throw new KiwiException("deadline /by value cannot be empty");
+                }
+                task = new Deadline(description, KiwiDate.parse(by));
+                break;
+            case "E":
+                if (parts.length != 5) {
+                    throw new KiwiException(
+                            "event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd");
+                }
+                String fromText = parts[3].trim();
+                String toText = parts[4].trim();
+                if (fromText.isEmpty() || toText.isEmpty()) {
+                    throw new KiwiException("event from/to values cannot be empty");
+                }
+                task = new Event(description, KiwiDate.parse(fromText), KiwiDate.parse(toText));
+                break;
+            default:
+                throw new KiwiException("unknown task type \"" + type + "\"");
         }
 
         if (isDone) {

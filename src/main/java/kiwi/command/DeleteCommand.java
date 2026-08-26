@@ -13,7 +13,9 @@ public class DeleteCommand extends Command {
     private final int index;
 
     /**
-     * @param index 0-based index of the task to delete
+     * Creates a command that deletes the task at the given index.
+     *
+     * @param index 0-based index of the task to delete.
      */
     public DeleteCommand(int index) {
         this.index = index;

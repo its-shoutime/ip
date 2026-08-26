@@ -1,6 +1,7 @@
 package kiwi;
 
 import java.time.LocalDate;
+
 import kiwi.command.AddCommand;
 import kiwi.command.Command;
 import kiwi.command.DeleteCommand;
@@ -23,9 +24,9 @@ public class Parser {
     /**
      * Parses one full input line into a {@link Command}.
      *
-     * @param input full line typed by the user
-     * @return a command object that can be executed
-     * @throws KiwiException if the command is unknown or its arguments are invalid
+     * @param input full line typed by the user.
+     * @return a command object that can be executed.
+     * @throws KiwiException If the command is unknown or its arguments are invalid.
      */
     public static Command parse(String input) throws KiwiException {
         if (input.equals("bye")) {
@@ -60,9 +61,9 @@ public class Parser {
     /**
      * Builds a to-do from the description after {@code todo}.
      *
-     * @param description task description
-     * @return a new {@link Todo}
-     * @throws KiwiException if the description is empty
+     * @param description task description.
+     * @return a new {@link Todo}.
+     * @throws KiwiException If the description is empty.
      */
     private static Todo parseTodo(String description) throws KiwiException {
         if (description.isEmpty()) {
@@ -74,9 +75,9 @@ public class Parser {
     /**
      * Parses {@code description /by yyyy-MM-dd} into a deadline task.
      *
-     * @param body text after the {@code deadline} command
-     * @return a new {@link Deadline}
-     * @throws KiwiException if the description or {@code /by} date is missing/invalid
+     * @param body text after the {@code deadline} command.
+     * @return a new {@link Deadline}.
+     * @throws KiwiException If the description or {@code /by} date is missing or invalid.
      */
     private static Deadline parseDeadline(String body) throws KiwiException {
         if (body.isEmpty()) {
@@ -95,9 +96,9 @@ public class Parser {
     /**
      * Parses {@code description /from yyyy-MM-dd /to yyyy-MM-dd} into an event.
      *
-     * @param body text after the {@code event} command
-     * @return a new {@link Event}
-     * @throws KiwiException if description or dates are missing/invalid
+     * @param body text after the {@code event} command.
+     * @return a new {@link Event}.
+     * @throws KiwiException If the description or dates are missing or invalid.
      */
     private static Event parseEvent(String body) throws KiwiException {
         if (body.isEmpty()) {
@@ -124,9 +125,9 @@ public class Parser {
     /**
      * Parses the date argument of an {@code on} command.
      *
-     * @param dateText {@code yyyy-MM-dd} date
-     * @return the parsed date
-     * @throws KiwiException if the date is missing or invalid
+     * @param dateText {@code yyyy-MM-dd} date.
+     * @return the parsed date.
+     * @throws KiwiException If the date is missing or invalid.
      */
     private static LocalDate parseOnDate(String dateText) throws KiwiException {
         if (dateText.isEmpty()) {
@@ -139,10 +140,10 @@ public class Parser {
      * Reads the 1-based task number from a mark/unmark/delete command.
      * Does not check whether the index exists in the list — commands do that at execute time.
      *
-     * @param input   full command line
-     * @param command {@code mark}, {@code unmark}, or {@code delete}
-     * @return 0-based index
-     * @throws KiwiException if the number is missing or not an integer
+     * @param input full command line.
+     * @param command {@code mark}, {@code unmark}, or {@code delete}.
+     * @return 0-based index.
+     * @throws KiwiException If the number is missing or not an integer.
      */
     private static int parseTaskNumber(String input, String command) throws KiwiException {
         String[] parts = input.trim().split("\\s+");

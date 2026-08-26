@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
+
 import kiwi.KiwiException;
 
 /**
@@ -25,9 +26,9 @@ public final class KiwiDate {
     /**
      * Parses a {@code yyyy-MM-dd} date string.
      *
-     * @param text date text such as {@code 2019-12-02}
-     * @return the parsed date
-     * @throws KiwiException if the text is not a valid ISO local date
+     * @param text date text such as {@code 2019-12-02}.
+     * @return the parsed date.
+     * @throws KiwiException If the text is not a valid ISO local date.
      */
     public static LocalDate parse(String text) throws KiwiException {
         try {
@@ -40,8 +41,8 @@ public final class KiwiDate {
     /**
      * Formats a date for display, e.g. {@code Oct 15 2019}.
      *
-     * @param date date to format
-     * @return formatted text
+     * @param date date to format.
+     * @return formatted text.
      */
     public static String format(LocalDate date) {
         return date.format(OUTPUT_FORMAT);

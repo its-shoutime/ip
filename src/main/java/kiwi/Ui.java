@@ -2,6 +2,7 @@ package kiwi;
 
 import java.time.LocalDate;
 import java.util.Scanner;
+
 import kiwi.task.KiwiDate;
 import kiwi.task.Task;
 import kiwi.task.TaskList;
@@ -51,7 +52,7 @@ public class Ui {
     /**
      * Reads the next full line of user input.
      *
-     * @return the command line typed by the user
+     * @return the command line typed by the user.
      */
     public String readCommand() {
         return in.nextLine();
@@ -60,7 +61,7 @@ public class Ui {
     /**
      * Shows an error message (typically from a {@link KiwiException}).
      *
-     * @param message text to display
+     * @param message text to display.
      */
     public void showError(String message) {
         System.out.println(message);
@@ -69,8 +70,8 @@ public class Ui {
     /**
      * Confirms that a task was added and reports the new list size.
      *
-     * @param task added task
-     * @param size number of tasks after the add
+     * @param task added task.
+     * @param size number of tasks after the add.
      */
     public void showTaskAdded(Task task, int size) {
         System.out.println("Got it. I've added this task:");
@@ -82,7 +83,7 @@ public class Ui {
     /**
      * Prints all tasks with 1-based numbering.
      *
-     * @param tasks current task list
+     * @param tasks current task list.
      */
     public void showTaskList(TaskList tasks) {
         System.out.println("Here are the tasks in your list:");
@@ -95,8 +96,8 @@ public class Ui {
      * Prints deadlines/events that fall on {@code date}, or "None found."
      * Uses each task's original 1-based index in the full list.
      *
-     * @param date  date being queried
-     * @param tasks full task list
+     * @param date date being queried.
+     * @param tasks full task list.
      */
     public void showTasksOn(LocalDate date, TaskList tasks) {
         System.out.println("Here are the deadlines/events on " + KiwiDate.format(date) + ":");
@@ -116,8 +117,8 @@ public class Ui {
     /**
      * Confirms a task was marked done.
      *
-     * @param displayNumber 1-based task number shown to the user
-     * @param task          the marked task
+     * @param displayNumber 1-based task number shown to the user.
+     * @param task the marked task.
      */
     public void showMarked(int displayNumber, Task task) {
         System.out.println("Marked this task as done:");
@@ -127,8 +128,8 @@ public class Ui {
     /**
      * Confirms a task was marked not done.
      *
-     * @param displayNumber 1-based task number shown to the user
-     * @param task          the unmarked task
+     * @param displayNumber 1-based task number shown to the user.
+     * @param task the unmarked task.
      */
     public void showUnmarked(int displayNumber, Task task) {
         System.out.println("Marked this task as not done yet:");
@@ -138,8 +139,8 @@ public class Ui {
     /**
      * Confirms a task was removed and reports the new list size.
      *
-     * @param removed the removed task
-     * @param size    number of tasks after the delete
+     * @param removed the removed task.
+     * @param size number of tasks after the delete.
      */
     public void showTaskDeleted(Task removed, int size) {
         System.out.println("Noted. I've removed this task:");

@@ -14,8 +14,8 @@ public class Task {
     /**
      * Creates a new task that is not done yet.
      *
-     * @param description what the task is about
-     * @param type        whether this is a to-do, deadline, or event
+     * @param description what the task is about.
+     * @param type whether this is a to-do, deadline, or event.
      */
     public Task(String description, TaskType type) {
         this.description = description;
@@ -26,7 +26,7 @@ public class Task {
     /**
      * Returns an icon showing whether the task is done.
      *
-     * @return "X" if done, otherwise a space
+     * @return "X" if done, otherwise a space.
      */
     public String getStatusIcon() {
         return (isDone ? "X" : " "); // mark done task with X
@@ -45,7 +45,7 @@ public class Task {
     /**
      * Returns the task description.
      *
-     * @return description text
+     * @return description text.
      */
     public String getDescription() {
         return description;
@@ -54,7 +54,7 @@ public class Task {
     /**
      * Returns the task's type (to-do, deadline, or event).
      *
-     * @return task type enum value
+     * @return task type enum value.
      */
     public TaskType getType() {
         return type;
@@ -64,8 +64,8 @@ public class Task {
      * Returns whether this task is associated with the given calendar date.
      * Default: to-dos have no date, so they never match.
      *
-     * @param date date to check
-     * @return true if the task occurs on {@code date}
+     * @param date date to check.
+     * @return true if the task occurs on {@code date}.
      */
     public boolean occursOn(LocalDate date) {
         return false;
@@ -74,7 +74,7 @@ public class Task {
     /**
      * Returns whether this task is marked done.
      *
-     * @return true if done
+     * @return true if done.
      */
     public boolean isDone() {
         return isDone;
@@ -84,7 +84,7 @@ public class Task {
      * Returns one line for hard-disk storage, e.g. {@code T | 1 | read book}.
      * Subclasses append extra fields after the description.
      *
-     * @return save-file line
+     * @return save-file line.
      */
     public String toSaveFormat() {
         return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
@@ -93,7 +93,7 @@ public class Task {
     /**
      * Returns a display string such as {@code [T][ ] read book}.
      *
-     * @return formatted task text
+     * @return formatted task text.
      */
     @Override
     public String toString() {

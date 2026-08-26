@@ -14,6 +14,7 @@ runs each test case against the program, shows the console session, and
 - **Task kinds:** `TaskType` enum (`TODO`, `DEADLINE`, `EVENT`) for type icons `[T]` / `[D]` / `[E]`
 - **Hard-disk file:** `./data/kiwi.txt` — loaded at startup; rewritten (via temp file + replace) whenever the list changes. Missing/unreadable save → empty list with a message. Corrupted lines are skipped with a warning; valid lines still load.
 - **Deadline/event dates:** accepted/stored as `yyyy-MM-dd`, shown as `MMM dd yyyy`. Command `on yyyy-MM-dd` lists deadlines due that day and events whose range covers it.
+- **Find:** `find KEYWORD` lists tasks whose description contains the keyword (case-sensitive substring). Matching tasks are numbered from 1 in the result; no matches prints `None found.`
 - **How tests are run:** compile all `*.java` under the source directory (recursively, for packages), then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | 2019-10-04 | 2019-10-11`.
 
 Suggested command (used by the skill runner):
@@ -199,7 +200,7 @@ ____________________________________________________________
 A todo needs a description — try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, mark, unmark, delete, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
@@ -319,7 +320,7 @@ Here are the tasks in your list:
 1.[T][ ] buy milk
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, mark, unmark, delete, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
@@ -960,6 +961,118 @@ Here are the deadlines/events on Oct 15 2019:
 ____________________________________________________________
 ____________________________________________________________
 Here are the deadlines/events on Jan 01 2020:
+None found.
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC18: Find tasks by keyword in the description
+
+**Aim:** `find book` lists only tasks whose description contains `book`, numbered from 1 in the result (not the original list index).
+
+**Inputs:**
+```text
+todo read book
+deadline return book /by 2019-06-06
+event project meeting /from 2019-08-06 /to 2019-08-06
+todo join sports club
+todo borrow book
+mark 1
+mark 2
+find book
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] read book
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [D][ ] return book (by: Jun 06 2019)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [E][ ] project meeting (from: Aug 06 2019 to: Aug 06 2019)
+Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] join sports club
+Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] borrow book
+Now you have 5 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Marked this task as done:
+1.[T][X] read book
+____________________________________________________________
+____________________________________________________________
+Marked this task as done:
+2.[D][X] return book (by: Jun 06 2019)
+____________________________________________________________
+____________________________________________________________
+Here are the matching tasks in your list:
+1.[T][X] read book
+2.[D][X] return book (by: Jun 06 2019)
+3.[T][ ] borrow book
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC19: Find with no matches and missing keyword
+
+**Aim:** `find` without a keyword is rejected; a keyword that matches nothing prints `None found.`
+
+**Inputs:**
+```text
+todo read book
+find
+find xyz
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] read book
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Please give a keyword to search for, e.g. find book
+____________________________________________________________
+____________________________________________________________
+Here are the matching tasks in your list:
 None found.
 ____________________________________________________________
 ____________________________________________________________

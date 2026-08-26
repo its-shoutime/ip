@@ -97,4 +97,21 @@ public class TaskList {
     public boolean isValidIndex(int index) {
         return index >= 0 && index < tasks.size();
     }
+
+    /**
+     * Returns a new list of tasks whose description contains {@code keyword}.
+     * Matching is a case-sensitive substring search. This list is not modified.
+     *
+     * @param keyword text to look for in each task description
+     * @return matching tasks, in the same order as this list
+     */
+    public TaskList find(String keyword) {
+        ArrayList<Task> matches = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getDescription().contains(keyword)) {
+                matches.add(task);
+            }
+        }
+        return new TaskList(matches);
+    }
 }

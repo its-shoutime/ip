@@ -11,6 +11,7 @@ import kiwi.command.AddCommand;
 import kiwi.command.Command;
 import kiwi.command.DeleteCommand;
 import kiwi.command.ExitCommand;
+import kiwi.command.FindCommand;
 import kiwi.command.ListCommand;
 import kiwi.command.MarkCommand;
 import kiwi.command.UnmarkCommand;
@@ -161,6 +162,27 @@ class ParserTest {
     }
 
     @Nested
+    class FindCommandParsing {
+
+        @Test
+        void parse_findWithKeyword_returnsFindCommand() throws KiwiException {
+            assertInstanceOf(FindCommand.class, Parser.parse("find book"));
+        }
+
+        @Test
+        void parse_findWithoutKeyword_throwsKiwiException() {
+            KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("find"));
+            assertEquals("Please give a keyword to search for, e.g. find book", exception.getMessage());
+        }
+
+        @Test
+        void parse_findWithOnlySpaces_throwsKiwiException() {
+            KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("find   "));
+            assertEquals("Please give a keyword to search for, e.g. find book", exception.getMessage());
+        }
+    }
+
+    @Nested
     class TaskNumberCommands {
 
         @Test
@@ -221,7 +243,7 @@ class ParserTest {
     void parse_unknownCommand_throwsKiwiException() {
         KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("jump"));
         assertEquals(
-                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, "
+                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
                         + "mark, unmark, delete, or bye.",
                 exception.getMessage());
     }

@@ -5,6 +5,7 @@ import kiwi.command.AddCommand;
 import kiwi.command.Command;
 import kiwi.command.DeleteCommand;
 import kiwi.command.ExitCommand;
+import kiwi.command.FindCommand;
 import kiwi.command.ListCommand;
 import kiwi.command.MarkCommand;
 import kiwi.command.OnCommand;
@@ -44,6 +45,9 @@ public class Parser {
         } else if (input.equals("on") || input.startsWith("on ")) {
             String dateText = input.equals("on") ? "" : input.substring("on ".length()).trim();
             return new OnCommand(parseOnDate(dateText));
+        } else if (input.equals("find") || input.startsWith("find ")) {
+            String keyword = input.equals("find") ? "" : input.substring("find ".length()).trim();
+            return new FindCommand(parseFindKeyword(keyword));
         } else if (input.equals("mark") || input.startsWith("mark ")) {
             return new MarkCommand(parseTaskNumber(input, "mark"));
         } else if (input.equals("unmark") || input.startsWith("unmark ")) {
@@ -52,7 +56,7 @@ public class Parser {
             return new DeleteCommand(parseTaskNumber(input, "delete"));
         } else {
             throw new KiwiException(
-                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, list, "
+                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
                             + "mark, unmark, delete, or bye.");
         }
     }
@@ -119,6 +123,20 @@ public class Parser {
         LocalDate from = KiwiDate.parse(toSplit[0].trim());
         LocalDate to = KiwiDate.parse(toSplit[1].trim());
         return new Event(fromSplit[0].trim(), from, to);
+    }
+
+    /**
+     * Checks that a {@code find} keyword is not empty.
+     *
+     * @param keyword search text after {@code find}
+     * @return the keyword unchanged
+     * @throws KiwiException if the keyword is missing
+     */
+    private static String parseFindKeyword(String keyword) throws KiwiException {
+        if (keyword.isEmpty()) {
+            throw new KiwiException("Please give a keyword to search for, e.g. find book");
+        }
+        return keyword;
     }
 
     /**

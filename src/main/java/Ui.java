@@ -1,5 +1,4 @@
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -79,7 +78,7 @@ public class Ui {
      *
      * @param tasks current task list
      */
-    public void showTaskList(ArrayList<Task> tasks) {
+    public void showTaskList(TaskList tasks) {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println((i + 1) + "." + tasks.get(i));
@@ -88,11 +87,12 @@ public class Ui {
 
     /**
      * Prints deadlines/events that fall on {@code date}, or "None found."
+     * Uses each task's original 1-based index in the full list.
      *
      * @param date  date being queried
-     * @param tasks full task list (filtering is done here by {@link Task#occursOn})
+     * @param tasks full task list
      */
-    public void showTasksOn(LocalDate date, ArrayList<Task> tasks) {
+    public void showTasksOn(LocalDate date, TaskList tasks) {
         System.out.println("Here are the deadlines/events on " + KiwiDate.format(date) + ":");
         int shown = 0;
         for (int i = 0; i < tasks.size(); i++) {

@@ -1,19 +1,14 @@
 import java.time.LocalDate;
-import java.util.ArrayList;
 
 /**
  * Kiwi is a simple chatbot that stores to-dos, deadlines, and events in memory,
  * lists them, and can mark, unmark, or delete them.
  */
 public class Kiwi {
-    /** Dynamically sized list of tasks (grows/shrinks as the user adds or deletes). */
-    private static final ArrayList<Task> tasks = new ArrayList<>();
-
     private static final Ui ui = new Ui();
+    private static final TaskList tasks = new TaskList(Storage.load());
 
     public static void main(String[] args) {
-        tasks.addAll(Storage.load());
-
         ui.showWelcome();
 
         String input = ui.readCommand();
@@ -129,7 +124,7 @@ public class Kiwi {
      */
     private static void addTask(Task task) {
         tasks.add(task);
-        Storage.save(tasks);
+        Storage.save(tasks.getTasks());
         ui.showTaskAdded(task, tasks.size());
     }
 
@@ -157,7 +152,7 @@ public class Kiwi {
      *
      * @param input   full command line
      * @param command {@code mark}, {@code unmark}, or {@code delete}
-     * @return 0-based index into {@link #tasks}
+     * @return 0-based index into the task list
      * @throws KiwiException if the number is missing, not an integer, or out of range
      */
     private static int parseTaskNumber(String input, String command) throws KiwiException {
@@ -171,34 +166,32 @@ public class Kiwi {
         } catch (NumberFormatException e) {
             throw new KiwiException("That task number doesn't look like a number: " + parts[1]);
         }
-        if (index < 0 || index >= tasks.size()) {
+        if (!tasks.isValidIndex(index)) {
             throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
         }
         return index;
     }
 
     private static void markDone(int index) {
-        Task task = tasks.get(index);
-        task.markAsDone();
-        Storage.save(tasks);
-        ui.showMarked(index + 1, task);
+        tasks.markDone(index);
+        Storage.save(tasks.getTasks());
+        ui.showMarked(index + 1, tasks.get(index));
     }
 
     private static void markUndone(int index) {
-        Task task = tasks.get(index);
-        task.markAsNotDone();
-        Storage.save(tasks);
-        ui.showUnmarked(index + 1, task);
+        tasks.markNotDone(index);
+        Storage.save(tasks.getTasks());
+        ui.showUnmarked(index + 1, tasks.get(index));
     }
 
     /**
-     * Removes the task at the given index ({@link ArrayList#remove(int)} shifts later items).
+     * Removes the task at the given index.
      *
      * @param index 0-based position of the task to remove
      */
     private static void deleteTask(int index) {
-        Task removed = tasks.remove(index);
-        Storage.save(tasks);
+        Task removed = tasks.delete(index);
+        Storage.save(tasks.getTasks());
         ui.showTaskDeleted(removed, tasks.size());
     }
 }

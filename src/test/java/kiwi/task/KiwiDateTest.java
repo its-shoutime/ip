@@ -43,16 +43,16 @@ class KiwiDateTest {
 
         @ParameterizedTest
         @ValueSource(strings = {
-                "",
-                "   ",
-                "02-12-2019",
-                "2019/12/02",
-                "2019-12",
-                "2019-13-01",
-                "2019-01-32",
-                "2019-02-30",
-                "2019-02-29",
-                "not-a-date"
+            "",
+            "   ",
+            "02-12-2019",
+            "2019/12/02",
+            "2019-12",
+            "2019-13-01",
+            "2019-01-32",
+            "2019-02-30",
+            "2019-02-29",
+            "not-a-date"
         })
         void parse_invalidInput_throwsKiwiException(String input) {
             KiwiException exception = assertThrows(KiwiException.class, () -> KiwiDate.parse(input));

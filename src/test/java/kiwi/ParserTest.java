@@ -95,9 +95,9 @@ class ParserTest {
 
         @ParameterizedTest
         @ValueSource(strings = {
-                "deadline return book",
-                "deadline  /by 2019-12-02",
-                "deadline return book /by "
+            "deadline return book",
+            "deadline  /by 2019-12-02",
+            "deadline return book /by "
         })
         void parse_incompleteDeadline_throwsKiwiException(String input) {
             KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse(input));
@@ -134,11 +134,11 @@ class ParserTest {
 
         @ParameterizedTest
         @ValueSource(strings = {
-                "event meeting",
-                "event  /from 2019-10-04 /to 2019-10-11",
-                "event meeting /from 2019-10-04",
-                "event meeting /from  /to 2019-10-11",
-                "event meeting /from 2019-10-04 /to "
+            "event meeting",
+            "event  /from 2019-10-04 /to 2019-10-11",
+            "event meeting /from 2019-10-04",
+            "event meeting /from  /to 2019-10-11",
+            "event meeting /from 2019-10-04 /to "
         })
         void parse_incompleteEvent_throwsKiwiException(String input) {
             KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse(input));

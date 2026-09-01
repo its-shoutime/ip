@@ -217,8 +217,7 @@ class ParserTest {
         @Test
         void parse_deleteCommand_removesTaskAtOneBasedIndex() throws KiwiException {
             TaskList tasks = new TaskList();
-            tasks.add(new Todo("first"));
-            tasks.add(new Todo("second"));
+            tasks.add(new Todo("first"), new Todo("second"));
 
             Command command = Parser.parse("delete 2");
             assertInstanceOf(DeleteCommand.class, command);

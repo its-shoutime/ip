@@ -21,8 +21,7 @@ class TaskListTest {
     @BeforeEach
     void setUp() {
         taskList = new TaskList();
-        taskList.add(new Todo("first"));
-        taskList.add(new Todo("second"));
+        taskList.add(new Todo("first"), new Todo("second"));
     }
 
     @ParameterizedTest
@@ -49,6 +48,16 @@ class TaskListTest {
         taskList.add(new Todo("third"));
         assertEquals(3, taskList.size());
         assertEquals("third", taskList.get(2).getDescription());
+    }
+
+    @Test
+    void add_multipleTasks_appendsAllInOrder() {
+        TaskList list = new TaskList();
+        list.add(new Todo("a"), new Todo("b"), new Todo("c"));
+        assertEquals(3, list.size());
+        assertEquals("a", list.get(0).getDescription());
+        assertEquals("b", list.get(1).getDescription());
+        assertEquals("c", list.get(2).getDescription());
     }
 
     @Test
@@ -86,10 +95,10 @@ class TaskListTest {
     @Test
     void find_substringInSeveralTasks_returnsAllMatches() {
         TaskList tasks = new TaskList();
-        tasks.add(new Todo("read book"));
-        tasks.add(new Todo("project meeting"));
-        tasks.add(new Deadline("return book", LocalDate.of(2019, 6, 6)));
-        tasks.add(new Todo("borrow book"));
+        tasks.add(new Todo("read book"),
+                new Todo("project meeting"),
+                new Deadline("return book", LocalDate.of(2019, 6, 6)),
+                new Todo("borrow book"));
 
         TaskList matches = tasks.find("book");
 

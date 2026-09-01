@@ -29,16 +29,18 @@ public class Ui {
     }
 
     /**
-     * Prints {@code message} to the console and records it for {@link #consumeResponse()}.
+     * Prints each of {@code messages} to the console and records them for {@link #consumeResponse()}.
      *
-     * @param message one line of chatbot output.
+     * @param messages one or more lines of chatbot output.
      */
-    private void show(String message) {
-        System.out.println(message);
-        if (response.length() > 0) {
-            response.append('\n');
+    private void show(String... messages) {
+        for (String message : messages) {
+            System.out.println(message);
+            if (response.length() > 0) {
+                response.append('\n');
+            }
+            response.append(message);
         }
-        response.append(message);
     }
 
     /**
@@ -100,10 +102,10 @@ public class Ui {
      * @param size number of tasks after the add.
      */
     public void showTaskAdded(Task task, int size) {
-        show("Got it. I've added this task:");
-        show("  " + task);
-        show("Now you have " + size + " task"
-                + (size == 1 ? "" : "s") + " in the list.");
+        show("Got it. I've added this task:",
+                "  " + task,
+                "Now you have " + size + " task"
+                        + (size == 1 ? "" : "s") + " in the list.");
     }
 
     /**
@@ -163,8 +165,8 @@ public class Ui {
      * @param task the marked task.
      */
     public void showMarked(int displayNumber, Task task) {
-        show("Marked this task as done:");
-        show(displayNumber + "." + task);
+        show("Marked this task as done:",
+                displayNumber + "." + task);
     }
 
     /**
@@ -174,8 +176,8 @@ public class Ui {
      * @param task the unmarked task.
      */
     public void showUnmarked(int displayNumber, Task task) {
-        show("Marked this task as not done yet:");
-        show(displayNumber + "." + task);
+        show("Marked this task as not done yet:",
+                displayNumber + "." + task);
     }
 
     /**
@@ -185,9 +187,9 @@ public class Ui {
      * @param size number of tasks after the delete.
      */
     public void showTaskDeleted(Task removed, int size) {
-        show("Noted. I've removed this task:");
-        show("  " + removed);
-        show("Now you have " + size + " task"
-                + (size == 1 ? "" : "s") + " in the list.");
+        show("Noted. I've removed this task:",
+                "  " + removed,
+                "Now you have " + size + " task"
+                        + (size == 1 ? "" : "s") + " in the list.");
     }
 }

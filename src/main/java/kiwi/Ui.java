@@ -21,10 +21,36 @@ public class Ui {
             + "|_|\\_\\_| \\_/\\_/ |_|\n";
 
     private final Scanner in;
+    private final StringBuilder response = new StringBuilder();
 
     /** Creates a UI that reads from standard input. */
     public Ui() {
         this.in = new Scanner(System.in);
+    }
+
+    /**
+     * Prints {@code message} to the console and records it for {@link #consumeResponse()}.
+     *
+     * @param message one line of chatbot output.
+     */
+    private void show(String message) {
+        System.out.println(message);
+        if (response.length() > 0) {
+            response.append('\n');
+        }
+        response.append(message);
+    }
+
+    /**
+     * Returns messages shown since the last consume, then clears the buffer.
+     * Used by the GUI so a dialog box can display the same text the console would print.
+     *
+     * @return the accumulated reply, or an empty string if nothing was shown.
+     */
+    public String consumeResponse() {
+        String result = response.toString();
+        response.setLength(0);
+        return result;
     }
 
     /** Prints the horizontal divider used between chatbot messages. */
@@ -46,7 +72,7 @@ public class Ui {
      * The main loop prints the dividers around each command, including exit.
      */
     public void showGoodbye() {
-        System.out.println("Bye. Hope to see you again soon!");
+        show("Bye. Hope to see you again soon!");
     }
 
     /**
@@ -64,7 +90,7 @@ public class Ui {
      * @param message text to display.
      */
     public void showError(String message) {
-        System.out.println(message);
+        show(message);
     }
 
     /**
@@ -74,9 +100,9 @@ public class Ui {
      * @param size number of tasks after the add.
      */
     public void showTaskAdded(Task task, int size) {
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + task);
-        System.out.println("Now you have " + size + " task"
+        show("Got it. I've added this task:");
+        show("  " + task);
+        show("Now you have " + size + " task"
                 + (size == 1 ? "" : "s") + " in the list.");
     }
 
@@ -86,9 +112,9 @@ public class Ui {
      * @param tasks current task list.
      */
     public void showTaskList(TaskList tasks) {
-        System.out.println("Here are the tasks in your list:");
+        show("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.get(i));
+            show((i + 1) + "." + tasks.get(i));
         }
     }
 
@@ -99,12 +125,12 @@ public class Ui {
      * @param matches tasks whose descriptions contain the search keyword
      */
     public void showMatchingTasks(TaskList matches) {
-        System.out.println("Here are the matching tasks in your list:");
+        show("Here are the matching tasks in your list:");
         for (int i = 0; i < matches.size(); i++) {
-            System.out.println((i + 1) + "." + matches.get(i));
+            show((i + 1) + "." + matches.get(i));
         }
         if (matches.size() == 0) {
-            System.out.println("None found.");
+            show("None found.");
         }
     }
 
@@ -116,17 +142,17 @@ public class Ui {
      * @param tasks full task list.
      */
     public void showTasksOn(LocalDate date, TaskList tasks) {
-        System.out.println("Here are the deadlines/events on " + KiwiDate.format(date) + ":");
+        show("Here are the deadlines/events on " + KiwiDate.format(date) + ":");
         int shown = 0;
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
             if (task.occursOn(date)) {
-                System.out.println((i + 1) + "." + task);
+                show((i + 1) + "." + task);
                 shown++;
             }
         }
         if (shown == 0) {
-            System.out.println("None found.");
+            show("None found.");
         }
     }
 
@@ -137,8 +163,8 @@ public class Ui {
      * @param task the marked task.
      */
     public void showMarked(int displayNumber, Task task) {
-        System.out.println("Marked this task as done:");
-        System.out.println(displayNumber + "." + task);
+        show("Marked this task as done:");
+        show(displayNumber + "." + task);
     }
 
     /**
@@ -148,8 +174,8 @@ public class Ui {
      * @param task the unmarked task.
      */
     public void showUnmarked(int displayNumber, Task task) {
-        System.out.println("Marked this task as not done yet:");
-        System.out.println(displayNumber + "." + task);
+        show("Marked this task as not done yet:");
+        show(displayNumber + "." + task);
     }
 
     /**
@@ -159,9 +185,9 @@ public class Ui {
      * @param size number of tasks after the delete.
      */
     public void showTaskDeleted(Task removed, int size) {
-        System.out.println("Noted. I've removed this task:");
-        System.out.println("  " + removed);
-        System.out.println("Now you have " + size + " task"
+        show("Noted. I've removed this task:");
+        show("  " + removed);
+        show("Now you have " + size + " task"
                 + (size == 1 ? "" : "s") + " in the list.");
     }
 }

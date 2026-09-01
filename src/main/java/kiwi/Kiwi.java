@@ -18,6 +18,7 @@ public class Kiwi {
     private final Storage storage;
     private final TaskList tasks;
     private final Ui ui;
+    private boolean isExit;
 
     /**
      * Creates a Kiwi chatbot that loads tasks from {@code filePath}.
@@ -49,6 +50,33 @@ public class Kiwi {
                 ui.showLine();
             }
         }
+    }
+
+    /**
+     * Parses and executes one user command, then returns the reply for the GUI.
+     *
+     * @param input the full command line from the user.
+     * @return the text to show in a dialog box.
+     */
+    public String getResponse(String input) {
+        isExit = false;
+        try {
+            Command command = Parser.parse(input);
+            command.execute(tasks, ui, storage);
+            isExit = command.isExit();
+        } catch (KiwiException e) {
+            ui.showError(e.getMessage());
+        }
+        return ui.consumeResponse();
+    }
+
+    /**
+     * Returns whether the last {@link #getResponse(String)} command should end the session.
+     *
+     * @return {@code true} after a successful {@code bye}; otherwise {@code false}.
+     */
+    public boolean isExit() {
+        return isExit;
     }
 
     /**

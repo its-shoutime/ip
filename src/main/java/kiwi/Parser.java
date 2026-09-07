@@ -43,29 +43,37 @@ public class Parser {
         assert input != null : "Ui and GUI always pass a command line, never null";
         if (isCommand(input, COMMAND_BYE)) {
             return new ExitCommand();
-        } else if (isCommand(input, COMMAND_LIST)) {
-            return new ListCommand();
-        } else if (isCommand(input, COMMAND_TODO)) {
-            return new AddCommand(parseTodo(argumentOf(input, COMMAND_TODO)));
-        } else if (isCommand(input, COMMAND_DEADLINE)) {
-            return new AddCommand(parseDeadline(argumentOf(input, COMMAND_DEADLINE)));
-        } else if (isCommand(input, COMMAND_EVENT)) {
-            return new AddCommand(parseEvent(argumentOf(input, COMMAND_EVENT)));
-        } else if (isCommand(input, COMMAND_ON)) {
-            return new OnCommand(parseOnDate(argumentOf(input, COMMAND_ON)));
-        } else if (isCommand(input, COMMAND_FIND)) {
-            return new FindCommand(parseFindKeyword(argumentOf(input, COMMAND_FIND)));
-        } else if (isCommand(input, COMMAND_MARK)) {
-            return new MarkCommand(parseTaskNumber(input, COMMAND_MARK));
-        } else if (isCommand(input, COMMAND_UNMARK)) {
-            return new UnmarkCommand(parseTaskNumber(input, COMMAND_UNMARK));
-        } else if (isCommand(input, COMMAND_DELETE)) {
-            return new DeleteCommand(parseTaskNumber(input, COMMAND_DELETE));
-        } else {
-            throw new KiwiException(
-                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
-                            + "mark, unmark, delete, or bye.");
         }
+        if (isCommand(input, COMMAND_LIST)) {
+            return new ListCommand();
+        }
+        if (isCommand(input, COMMAND_TODO)) {
+            return new AddCommand(parseTodo(argumentOf(input, COMMAND_TODO)));
+        }
+        if (isCommand(input, COMMAND_DEADLINE)) {
+            return new AddCommand(parseDeadline(argumentOf(input, COMMAND_DEADLINE)));
+        }
+        if (isCommand(input, COMMAND_EVENT)) {
+            return new AddCommand(parseEvent(argumentOf(input, COMMAND_EVENT)));
+        }
+        if (isCommand(input, COMMAND_ON)) {
+            return new OnCommand(parseOnDate(argumentOf(input, COMMAND_ON)));
+        }
+        if (isCommand(input, COMMAND_FIND)) {
+            return new FindCommand(parseFindKeyword(argumentOf(input, COMMAND_FIND)));
+        }
+        if (isCommand(input, COMMAND_MARK)) {
+            return new MarkCommand(parseTaskNumber(input, COMMAND_MARK));
+        }
+        if (isCommand(input, COMMAND_UNMARK)) {
+            return new UnmarkCommand(parseTaskNumber(input, COMMAND_UNMARK));
+        }
+        if (isCommand(input, COMMAND_DELETE)) {
+            return new DeleteCommand(parseTaskNumber(input, COMMAND_DELETE));
+        }
+        throw new KiwiException(
+                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
+                        + "mark, unmark, delete, or bye.");
     }
 
     /**

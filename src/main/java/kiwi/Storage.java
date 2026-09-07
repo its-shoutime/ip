@@ -165,7 +165,9 @@ public class Storage {
         String doneFlag = parts[1].trim();
         String description = parts[2].trim();
 
-        if (!doneFlag.equals(Task.SAVE_NOT_DONE_FLAG) && !doneFlag.equals(Task.SAVE_DONE_FLAG)) {
+        boolean isDoneFlag = doneFlag.equals(Task.SAVE_DONE_FLAG);
+        boolean isNotDoneFlag = doneFlag.equals(Task.SAVE_NOT_DONE_FLAG);
+        if (!isDoneFlag && !isNotDoneFlag) {
             throw new KiwiException("done flag must be " + Task.SAVE_NOT_DONE_FLAG + " or "
                     + Task.SAVE_DONE_FLAG + ", found \"" + doneFlag + "\"");
         }
@@ -173,9 +175,8 @@ public class Storage {
             throw new KiwiException("description cannot be empty");
         }
 
-        boolean isDone = doneFlag.equals(Task.SAVE_DONE_FLAG);
         Task task = createTask(TaskType.fromIcon(type), parts, description);
-        if (isDone) {
+        if (isDoneFlag) {
             task.markAsDone();
         }
         return task;

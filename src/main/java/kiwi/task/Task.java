@@ -38,7 +38,7 @@ public class Task {
      * @return "X" if done, otherwise a space.
      */
     public String getStatusIcon() {
-        return (isDone ? "X" : " "); // mark done task with X
+        return isDone ? "X" : " ";
     }
 
     /** Marks this task as completed. */

@@ -92,19 +92,10 @@ public class Storage {
         if (!Files.exists(savePath)) {
             return loaded;
         }
-        if (Files.isDirectory(savePath)) {
-            System.out.println("Could not load tasks: " + filePath
-                    + " is a folder, not a file. Starting with an empty list.");
-            return loaded;
-        }
-        if (!Files.isRegularFile(savePath)) {
-            System.out.println("Could not load tasks: " + filePath
-                    + " is not a normal file. Starting with an empty list.");
-            return loaded;
-        }
-        if (!Files.isReadable(savePath)) {
-            System.out.println("Could not load tasks: " + filePath
-                    + " is not readable. Starting with an empty list.");
+        String unusableReason = unusableSaveReason();
+        if (unusableReason != null) {
+            System.out.println("Could not load tasks: " + unusableReason
+                    + ". Starting with an empty list.");
             return loaded;
         }
 
@@ -131,6 +122,22 @@ public class Storage {
             return new ArrayList<>();
         }
         return loaded;
+    }
+
+    /**
+     * Returns why this save path cannot be loaded, or {@code null} if it can.
+     */
+    private String unusableSaveReason() {
+        if (Files.isDirectory(savePath)) {
+            return filePath + " is a folder, not a file";
+        }
+        if (!Files.isRegularFile(savePath)) {
+            return filePath + " is not a normal file";
+        }
+        if (!Files.isReadable(savePath)) {
+            return filePath + " is not readable";
+        }
+        return null;
     }
 
     /**

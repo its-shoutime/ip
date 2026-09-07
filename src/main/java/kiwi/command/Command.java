@@ -22,6 +22,30 @@ public abstract class Command {
     public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws KiwiException;
 
     /**
+     * Ensures {@code index} refers to an existing task.
+     *
+     * @param tasks the task list to check against.
+     * @param index 0-based index from the user command.
+     * @throws KiwiException If the index is out of range.
+     */
+    protected void requireValidIndex(TaskList tasks, int index) throws KiwiException {
+        if (!tasks.isValidIndex(index)) {
+            throw new KiwiException("There is no task number " + toDisplayNumber(index)
+                    + " in your list.");
+        }
+    }
+
+    /**
+     * Converts a 0-based list index to the 1-based number shown to the user.
+     *
+     * @param zeroBasedIndex position in the task list.
+     * @return the corresponding user-visible task number.
+     */
+    protected static int toDisplayNumber(int zeroBasedIndex) {
+        return zeroBasedIndex + 1;
+    }
+
+    /**
      * Returns whether this command should end the chatbot loop.
      *
      * @return {@code true} only for exit; default is {@code false}.

@@ -21,6 +21,24 @@ import kiwi.task.Todo;
  * Does not mutate the task list or print messages.
  */
 public class Parser {
+    private static final String COMMAND_BYE = "bye";
+    private static final String COMMAND_LIST = "list";
+    private static final String COMMAND_TODO = "todo";
+    private static final String COMMAND_DEADLINE = "deadline";
+    private static final String COMMAND_EVENT = "event";
+    private static final String COMMAND_ON = "on";
+    private static final String COMMAND_FIND = "find";
+    private static final String COMMAND_MARK = "mark";
+    private static final String COMMAND_UNMARK = "unmark";
+    private static final String COMMAND_DELETE = "delete";
+
+    private static final String DELIMITER_BY = " /by ";
+    private static final String DELIMITER_FROM = " /from ";
+    private static final String DELIMITER_TO = " /to ";
+
+    private static final String EVENT_USAGE =
+            "Events need /from and /to as yyyy-MM-dd — "
+                    + "e.g. event meeting /from 2019-10-04 /to 2019-10-11";
 
     /**
      * Parses one full input line into a {@link Command}.
@@ -31,36 +49,56 @@ public class Parser {
      */
     public static Command parse(String input) throws KiwiException {
         assert input != null : "Ui and GUI always pass a command line, never null";
-        if (input.equals("bye")) {
+        if (isCommand(input, COMMAND_BYE)) {
             return new ExitCommand();
-        } else if (input.equals("list")) {
-            return new ListCommand();
-        } else if (input.equals("todo") || input.startsWith("todo ")) {
-            String description = input.equals("todo") ? "" : input.substring("todo ".length()).trim();
-            return new AddCommand(parseTodo(description));
-        } else if (input.equals("deadline") || input.startsWith("deadline ")) {
-            String body = input.equals("deadline") ? "" : input.substring("deadline ".length()).trim();
-            return new AddCommand(parseDeadline(body));
-        } else if (input.equals("event") || input.startsWith("event ")) {
-            String body = input.equals("event") ? "" : input.substring("event ".length()).trim();
-            return new AddCommand(parseEvent(body));
-        } else if (input.equals("on") || input.startsWith("on ")) {
-            String dateText = input.equals("on") ? "" : input.substring("on ".length()).trim();
-            return new OnCommand(parseOnDate(dateText));
-        } else if (input.equals("find") || input.startsWith("find ")) {
-            String keyword = input.equals("find") ? "" : input.substring("find ".length()).trim();
-            return new FindCommand(parseFindKeyword(keyword));
-        } else if (input.equals("mark") || input.startsWith("mark ")) {
-            return new MarkCommand(parseTaskNumber(input, "mark"));
-        } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-            return new UnmarkCommand(parseTaskNumber(input, "unmark"));
-        } else if (input.equals("delete") || input.startsWith("delete ")) {
-            return new DeleteCommand(parseTaskNumber(input, "delete"));
-        } else {
-            throw new KiwiException(
-                    "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
-                            + "mark, unmark, delete, or bye.");
         }
+        if (isCommand(input, COMMAND_LIST)) {
+            return new ListCommand();
+        }
+        if (isCommand(input, COMMAND_TODO)) {
+            return new AddCommand(parseTodo(argumentOf(input, COMMAND_TODO)));
+        }
+        if (isCommand(input, COMMAND_DEADLINE)) {
+            return new AddCommand(parseDeadline(argumentOf(input, COMMAND_DEADLINE)));
+        }
+        if (isCommand(input, COMMAND_EVENT)) {
+            return new AddCommand(parseEvent(argumentOf(input, COMMAND_EVENT)));
+        }
+        if (isCommand(input, COMMAND_ON)) {
+            return new OnCommand(parseOnDate(argumentOf(input, COMMAND_ON)));
+        }
+        if (isCommand(input, COMMAND_FIND)) {
+            return new FindCommand(parseFindKeyword(argumentOf(input, COMMAND_FIND)));
+        }
+        if (isCommand(input, COMMAND_MARK)) {
+            return new MarkCommand(parseTaskNumber(input, COMMAND_MARK));
+        }
+        if (isCommand(input, COMMAND_UNMARK)) {
+            return new UnmarkCommand(parseTaskNumber(input, COMMAND_UNMARK));
+        }
+        if (isCommand(input, COMMAND_DELETE)) {
+            return new DeleteCommand(parseTaskNumber(input, COMMAND_DELETE));
+        }
+        throw new KiwiException(
+                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
+                        + "mark, unmark, delete, or bye.");
+    }
+
+    /**
+     * Returns whether {@code input} is exactly {@code commandWord}, or that word followed by arguments.
+     */
+    private static boolean isCommand(String input, String commandWord) {
+        return input.equals(commandWord) || input.startsWith(commandWord + " ");
+    }
+
+    /**
+     * Returns the trimmed text after {@code commandWord}, or an empty string if there is none.
+     */
+    private static String argumentOf(String input, String commandWord) {
+        if (input.equals(commandWord)) {
+            return "";
+        }
+        return input.substring(commandWord.length() + 1).trim();
     }
 
     /**
@@ -90,14 +128,19 @@ public class Parser {
             throw new KiwiException(
                     "A deadline needs details — try: deadline return book /by 2019-12-02");
         }
-        String[] parts = body.split(" /by ", 2);
-        if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+        String[] parts = body.split(DELIMITER_BY, 2);
+        boolean hasBySeparator = parts.length == 2;
+        boolean hasDescription = hasBySeparator && !parts[0].trim().isEmpty();
+        boolean hasByDate = hasBySeparator && !parts[1].trim().isEmpty();
+        if (!hasDescription || !hasByDate) {
             throw new KiwiException(
                     "Deadlines need both a description and /by yyyy-MM-dd — "
                             + "e.g. deadline return book /by 2019-12-02");
         }
         assert parts.length == 2 : "Deadline body has description and /by after validation";
-        return new Deadline(parts[0].trim(), KiwiDate.parse(parts[1].trim()));
+        String description = parts[0].trim();
+        String byText = parts[1].trim();
+        return new Deadline(description, KiwiDate.parse(byText));
     }
 
     /**
@@ -112,23 +155,25 @@ public class Parser {
             throw new KiwiException(
                     "An event needs details — try: event meeting /from 2019-10-04 /to 2019-10-11");
         }
-        String[] fromSplit = body.split(" /from ", 2);
-        if (fromSplit.length < 2 || fromSplit[0].trim().isEmpty()) {
-            throw new KiwiException(
-                    "Events need /from and /to as yyyy-MM-dd — "
-                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
+        String[] fromSplit = body.split(DELIMITER_FROM, 2);
+        boolean hasFromSeparator = fromSplit.length == 2;
+        boolean hasDescription = hasFromSeparator && !fromSplit[0].trim().isEmpty();
+        if (!hasDescription) {
+            throw new KiwiException(EVENT_USAGE);
         }
         assert fromSplit.length == 2 : "Event body has description and /from after validation";
-        String[] toSplit = fromSplit[1].split(" /to ", 2);
-        if (toSplit.length < 2 || toSplit[0].trim().isEmpty() || toSplit[1].trim().isEmpty()) {
-            throw new KiwiException(
-                    "Events need /from and /to as yyyy-MM-dd — "
-                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
+        String[] toSplit = fromSplit[1].split(DELIMITER_TO, 2);
+        boolean hasToSeparator = toSplit.length == 2;
+        boolean hasFromDate = hasToSeparator && !toSplit[0].trim().isEmpty();
+        boolean hasToDate = hasToSeparator && !toSplit[1].trim().isEmpty();
+        if (!hasFromDate || !hasToDate) {
+            throw new KiwiException(EVENT_USAGE);
         }
         assert toSplit.length == 2 : "Event body has /from and /to after validation";
+        String description = fromSplit[0].trim();
         LocalDate from = KiwiDate.parse(toSplit[0].trim());
         LocalDate to = KiwiDate.parse(toSplit[1].trim());
-        return new Event(fromSplit[0].trim(), from, to);
+        return new Event(description, from, to);
     }
 
     /**
@@ -177,7 +222,8 @@ public class Parser {
         }
         assert parts.length >= 2 : "Task-number token exists after the missing-argument check";
         try {
-            return Integer.parseInt(parts[1]) - 1;
+            int userNumber = Integer.parseInt(parts[1]);
+            return userNumber - 1;
         } catch (NumberFormatException e) {
             throw new KiwiException("That task number doesn't look like a number: " + parts[1]);
         }

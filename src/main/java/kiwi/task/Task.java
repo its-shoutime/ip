@@ -7,6 +7,13 @@ import java.time.LocalDate;
  * Subclasses may add extra details such as deadline or event times.
  */
 public class Task {
+    /** Separator between fields in a save-file line. */
+    public static final String SAVE_FIELD_SEPARATOR = " | ";
+    /** Flag written when the task is done. */
+    public static final String SAVE_DONE_FLAG = "1";
+    /** Flag written when the task is not done. */
+    public static final String SAVE_NOT_DONE_FLAG = "0";
+
     protected String description;
     protected boolean isDone;
     protected TaskType type;
@@ -31,7 +38,7 @@ public class Task {
      * @return "X" if done, otherwise a space.
      */
     public String getStatusIcon() {
-        return (isDone ? "X" : " "); // mark done task with X
+        return isDone ? "X" : " ";
     }
 
     /** Marks this task as completed. */
@@ -89,7 +96,9 @@ public class Task {
      * @return save-file line.
      */
     public String toSaveFormat() {
-        return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
+        return type.getIcon() + SAVE_FIELD_SEPARATOR
+                + (isDone ? SAVE_DONE_FLAG : SAVE_NOT_DONE_FLAG)
+                + SAVE_FIELD_SEPARATOR + description;
     }
 
     /**

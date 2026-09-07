@@ -27,12 +27,10 @@ public class MarkCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws KiwiException {
-        if (!tasks.isValidIndex(index)) {
-            throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
-        }
+        requireValidIndex(tasks, index);
         assert tasks.isValidIndex(index) : "Index is in range after the user-input check";
         tasks.markDone(index);
         storage.save(tasks.getTasks());
-        ui.showMarked(index + 1, tasks.get(index));
+        ui.showMarked(toDisplayNumber(index), tasks.get(index));
     }
 }

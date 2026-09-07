@@ -38,7 +38,9 @@ public class Event extends Task {
      */
     @Override
     public boolean occursOn(LocalDate date) {
-        return !date.isBefore(from) && !date.isAfter(to);
+        boolean isOnOrAfterStart = !date.isBefore(from);
+        boolean isOnOrBeforeEnd = !date.isAfter(to);
+        return isOnOrAfterStart && isOnOrBeforeEnd;
     }
 
     /**
@@ -47,8 +49,8 @@ public class Event extends Task {
      */
     @Override
     public String toSaveFormat() {
-        return super.toSaveFormat() + " | " + from.format(KiwiDate.INPUT_FORMAT)
-                + " | " + to.format(KiwiDate.INPUT_FORMAT);
+        return super.toSaveFormat() + SAVE_FIELD_SEPARATOR + from.format(KiwiDate.INPUT_FORMAT)
+                + SAVE_FIELD_SEPARATOR + to.format(KiwiDate.INPUT_FORMAT);
     }
 
     /**

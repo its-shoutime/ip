@@ -11,7 +11,9 @@ public class FindCommand extends Command {
     private final String keyword;
 
     /**
-     * @param keyword case-sensitive substring to search for in descriptions
+     * Creates a command that lists tasks whose description contains {@code keyword}.
+     *
+     * @param keyword case-sensitive substring to search for in descriptions.
      */
     public FindCommand(String keyword) {
         assert keyword != null && !keyword.isEmpty()

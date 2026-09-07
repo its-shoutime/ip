@@ -7,11 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import kiwi.task.Deadline;
 import kiwi.task.Event;
 import kiwi.task.KiwiDate;
 import kiwi.task.Task;
+import kiwi.task.TaskType;
 import kiwi.task.Todo;
 
 /**
@@ -19,6 +21,13 @@ import kiwi.task.Todo;
  * Invalid lines are skipped with a warning so valid tasks can still be restored.
  */
 public class Storage {
+    private static final int FIELD_COUNT_MINIMUM = 3;
+    private static final int FIELD_COUNT_TODO = 3;
+    private static final int FIELD_COUNT_DEADLINE = 4;
+    private static final int FIELD_COUNT_EVENT = 5;
+
+    private static final int KEEP_TRAILING_EMPTY_FIELDS = -1;
+
     private final String filePath;
     private final Path savePath;
     private final Path dataDir;
@@ -83,19 +92,10 @@ public class Storage {
         if (!Files.exists(savePath)) {
             return loaded;
         }
-        if (Files.isDirectory(savePath)) {
-            System.out.println("Could not load tasks: " + filePath
-                    + " is a folder, not a file. Starting with an empty list.");
-            return loaded;
-        }
-        if (!Files.isRegularFile(savePath)) {
-            System.out.println("Could not load tasks: " + filePath
-                    + " is not a normal file. Starting with an empty list.");
-            return loaded;
-        }
-        if (!Files.isReadable(savePath)) {
-            System.out.println("Could not load tasks: " + filePath
-                    + " is not readable. Starting with an empty list.");
+        String unusableReason = unusableSaveReason();
+        if (unusableReason != null) {
+            System.out.println("Could not load tasks: " + unusableReason
+                    + ". Starting with an empty list.");
             return loaded;
         }
 
@@ -125,6 +125,22 @@ public class Storage {
     }
 
     /**
+     * Returns why this save path cannot be loaded, or {@code null} if it can.
+     */
+    private String unusableSaveReason() {
+        if (Files.isDirectory(savePath)) {
+            return filePath + " is a folder, not a file";
+        }
+        if (!Files.isRegularFile(savePath)) {
+            return filePath + " is not a normal file";
+        }
+        if (!Files.isReadable(savePath)) {
+            return filePath + " is not readable";
+        }
+        return null;
+    }
+
+    /**
      * Parses one save-file line into a {@link Task}.
      * Expected forms:
      * {@code T | 1 | description},
@@ -138,62 +154,77 @@ public class Storage {
     private static Task parseLine(String line) throws KiwiException {
         assert line != null && !line.isBlank() : "load() skips blank lines before parseLine";
         // Keep empty trailing fields so "D | 0 | go | " is detected as incomplete.
-        String[] parts = line.split(" \\| ", -1);
-        if (parts.length < 3) {
-            throw new KiwiException("expected at least 3 fields separated by \" | \"");
+        String[] parts = line.split(Pattern.quote(Task.SAVE_FIELD_SEPARATOR),
+                KEEP_TRAILING_EMPTY_FIELDS);
+        if (parts.length < FIELD_COUNT_MINIMUM) {
+            throw new KiwiException("expected at least " + FIELD_COUNT_MINIMUM
+                    + " fields separated by \"" + Task.SAVE_FIELD_SEPARATOR + "\"");
         }
 
         String type = parts[0].trim();
         String doneFlag = parts[1].trim();
         String description = parts[2].trim();
 
-        if (!doneFlag.equals("0") && !doneFlag.equals("1")) {
-            throw new KiwiException("done flag must be 0 or 1, found \"" + doneFlag + "\"");
+        boolean isDoneFlag = doneFlag.equals(Task.SAVE_DONE_FLAG);
+        boolean isNotDoneFlag = doneFlag.equals(Task.SAVE_NOT_DONE_FLAG);
+        if (!isDoneFlag && !isNotDoneFlag) {
+            throw new KiwiException("done flag must be " + Task.SAVE_NOT_DONE_FLAG + " or "
+                    + Task.SAVE_DONE_FLAG + ", found \"" + doneFlag + "\"");
         }
         if (description.isEmpty()) {
             throw new KiwiException("description cannot be empty");
         }
 
-        boolean isDone = doneFlag.equals("1");
-        Task task;
-        switch (type) {
-            case "T":
-                if (parts.length != 3) {
-                    throw new KiwiException("todo lines must look like: T | 0 | description");
-                }
-                task = new Todo(description);
-                break;
-            case "D":
-                if (parts.length != 4) {
-                    throw new KiwiException(
-                            "deadline lines must look like: D | 0 | description | yyyy-MM-dd");
-                }
-                String by = parts[3].trim();
-                if (by.isEmpty()) {
-                    throw new KiwiException("deadline /by value cannot be empty");
-                }
-                task = new Deadline(description, KiwiDate.parse(by));
-                break;
-            case "E":
-                if (parts.length != 5) {
-                    throw new KiwiException(
-                            "event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd");
-                }
-                String fromText = parts[3].trim();
-                String toText = parts[4].trim();
-                if (fromText.isEmpty() || toText.isEmpty()) {
-                    throw new KiwiException("event from/to values cannot be empty");
-                }
-                task = new Event(description, KiwiDate.parse(fromText), KiwiDate.parse(toText));
-                break;
-            default:
-                throw new KiwiException("unknown task type \"" + type + "\"");
-        }
-
-        assert task != null : "Every recognized save-file type produces a Task";
-        if (isDone) {
+        Task task = createTask(TaskType.fromIcon(type), parts, description);
+        if (isDoneFlag) {
             task.markAsDone();
         }
         return task;
+    }
+
+    private static Task createTask(TaskType taskType, String[] parts, String description)
+            throws KiwiException {
+        switch (taskType) {
+            case TODO:
+                return parseTodoLine(parts, description);
+            case DEADLINE:
+                return parseDeadlineLine(parts, description);
+            case EVENT:
+                return parseEventLine(parts, description);
+            default:
+                throw new KiwiException("unknown task type \"" + taskType.getIcon() + "\"");
+        }
+    }
+
+    private static Task parseTodoLine(String[] parts, String description) throws KiwiException {
+        if (parts.length != FIELD_COUNT_TODO) {
+            throw new KiwiException("todo lines must look like: T | 0 | description");
+        }
+        return new Todo(description);
+    }
+
+    private static Task parseDeadlineLine(String[] parts, String description) throws KiwiException {
+        if (parts.length != FIELD_COUNT_DEADLINE) {
+            throw new KiwiException(
+                    "deadline lines must look like: D | 0 | description | yyyy-MM-dd");
+        }
+        String by = parts[3].trim();
+        if (by.isEmpty()) {
+            throw new KiwiException("deadline /by value cannot be empty");
+        }
+        return new Deadline(description, KiwiDate.parse(by));
+    }
+
+    private static Task parseEventLine(String[] parts, String description) throws KiwiException {
+        if (parts.length != FIELD_COUNT_EVENT) {
+            throw new KiwiException(
+                    "event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd");
+        }
+        String fromText = parts[3].trim();
+        String toText = parts[4].trim();
+        if (fromText.isEmpty() || toText.isEmpty()) {
+            throw new KiwiException("event from/to values cannot be empty");
+        }
+        return new Event(description, KiwiDate.parse(fromText), KiwiDate.parse(toText));
     }
 }

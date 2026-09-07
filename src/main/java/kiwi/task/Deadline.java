@@ -46,7 +46,7 @@ public class Deadline extends Task {
     @Override
     public String toSaveFormat() {
         // Keep ISO on disk so load can parse reliably.
-        return super.toSaveFormat() + " | " + by.format(KiwiDate.INPUT_FORMAT);
+        return super.toSaveFormat() + SAVE_FIELD_SEPARATOR + by.format(KiwiDate.INPUT_FORMAT);
     }
 
     /**

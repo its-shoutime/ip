@@ -15,6 +15,8 @@ import kiwi.Kiwi;
  * Controller for the main GUI.
  */
 public class MainWindow extends AnchorPane {
+    private static final double EXIT_DELAY_SECONDS = 1;
+
     @FXML
     private ScrollPane scrollPane;
     @FXML
@@ -29,14 +31,15 @@ public class MainWindow extends AnchorPane {
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/DaUser.png"));
     private Image kiwiImage = new Image(this.getClass().getResourceAsStream("/images/DaKiwi.png"));
 
+    /** Binds the dialog list so it stays scrolled to the latest message. */
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
-    /** Injects the Kiwi instance */
-    public void setKiwi(Kiwi k) {
-        kiwi = k;
+    /** Injects the Kiwi instance. */
+    public void setKiwi(Kiwi kiwi) {
+        this.kiwi = kiwi;
     }
 
     /**
@@ -57,7 +60,7 @@ public class MainWindow extends AnchorPane {
         if (kiwi.isExit()) {
             userInput.setDisable(true);
             sendButton.setDisable(true);
-            PauseTransition delay = new PauseTransition(Duration.seconds(1));
+            PauseTransition delay = new PauseTransition(Duration.seconds(EXIT_DELAY_SECONDS));
             delay.setOnFinished(event -> Platform.exit());
             delay.play();
         }

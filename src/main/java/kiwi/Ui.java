@@ -104,8 +104,7 @@ public class Ui {
     public void showTaskAdded(Task task, int size) {
         show("Got it. I've added this task:",
                 "  " + task,
-                "Now you have " + size + " task"
-                        + (size == 1 ? "" : "s") + " in the list.");
+                formatTaskCount(size));
     }
 
     /**
@@ -115,9 +114,7 @@ public class Ui {
      */
     public void showTaskList(TaskList tasks) {
         show("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            show((i + 1) + "." + tasks.get(i));
-        }
+        showNumberedTasks(tasks);
     }
 
     /**
@@ -128,9 +125,7 @@ public class Ui {
      */
     public void showMatchingTasks(TaskList matches) {
         show("Here are the matching tasks in your list:");
-        for (int i = 0; i < matches.size(); i++) {
-            show((i + 1) + "." + matches.get(i));
-        }
+        showNumberedTasks(matches);
         if (matches.size() == 0) {
             show("None found.");
         }
@@ -149,7 +144,7 @@ public class Ui {
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
             if (task.occursOn(date)) {
-                show((i + 1) + "." + task);
+                showNumberedTask(i, task);
                 shown++;
             }
         }
@@ -189,7 +184,21 @@ public class Ui {
     public void showTaskDeleted(Task removed, int size) {
         show("Noted. I've removed this task:",
                 "  " + removed,
-                "Now you have " + size + " task"
-                        + (size == 1 ? "" : "s") + " in the list.");
+                formatTaskCount(size));
+    }
+
+    private void showNumberedTasks(TaskList tasks) {
+        for (int i = 0; i < tasks.size(); i++) {
+            showNumberedTask(i, tasks.get(i));
+        }
+    }
+
+    private void showNumberedTask(int zeroBasedIndex, Task task) {
+        show((zeroBasedIndex + 1) + "." + task);
+    }
+
+    private String formatTaskCount(int size) {
+        String taskWord = (size == 1) ? "task" : "tasks";
+        return "Now you have " + size + " " + taskWord + " in the list.";
     }
 }

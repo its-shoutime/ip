@@ -22,7 +22,7 @@ public class Main extends Application {
             AnchorPane ap = fxmlLoader.load();
             Scene scene = new Scene(ap);
             stage.setScene(scene);
-            fxmlLoader.<MainWindow>getController().setKiwi(kiwi);  // inject the Kiwi instance
+            fxmlLoader.<MainWindow>getController().setKiwi(kiwi);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

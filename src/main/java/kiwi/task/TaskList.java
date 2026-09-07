@@ -1,6 +1,7 @@
 package kiwi.task;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Holds the in-memory list of tasks and supports add, delete, get, and mark operations.
@@ -116,12 +117,9 @@ public class TaskList {
      */
     public TaskList find(String keyword) {
         assert keyword != null : "Parser already validates the find keyword";
-        ArrayList<Task> matches = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.getDescription().contains(keyword)) {
-                matches.add(task);
-            }
-        }
+        ArrayList<Task> matches = tasks.stream()
+                .filter(task -> task.getDescription().contains(keyword))
+                .collect(Collectors.toCollection(ArrayList::new));
         return new TaskList(matches);
     }
 }

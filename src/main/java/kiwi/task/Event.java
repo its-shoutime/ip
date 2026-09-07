@@ -47,8 +47,8 @@ public class Event extends Task {
      */
     @Override
     public String toSaveFormat() {
-        return super.toSaveFormat() + " | " + from.format(KiwiDate.INPUT_FORMAT)
-                + " | " + to.format(KiwiDate.INPUT_FORMAT);
+        return super.toSaveFormat() + SAVE_FIELD_SEPARATOR + from.format(KiwiDate.INPUT_FORMAT)
+                + SAVE_FIELD_SEPARATOR + to.format(KiwiDate.INPUT_FORMAT);
     }
 
     /**

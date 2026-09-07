@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import kiwi.task.Deadline;
 import kiwi.task.Event;
@@ -19,6 +20,13 @@ import kiwi.task.Todo;
  * Invalid lines are skipped with a warning so valid tasks can still be restored.
  */
 public class Storage {
+    private static final int FIELD_COUNT_MINIMUM = 3;
+    private static final int FIELD_COUNT_TODO = 3;
+    private static final int FIELD_COUNT_DEADLINE = 4;
+    private static final int FIELD_COUNT_EVENT = 5;
+
+    private static final int KEEP_TRAILING_EMPTY_FIELDS = -1;
+
     private final String filePath;
     private final Path savePath;
     private final Path dataDir;
@@ -138,33 +146,36 @@ public class Storage {
     private static Task parseLine(String line) throws KiwiException {
         assert line != null && !line.isBlank() : "load() skips blank lines before parseLine";
         // Keep empty trailing fields so "D | 0 | go | " is detected as incomplete.
-        String[] parts = line.split(" \\| ", -1);
-        if (parts.length < 3) {
-            throw new KiwiException("expected at least 3 fields separated by \" | \"");
+        String[] parts = line.split(Pattern.quote(Task.SAVE_FIELD_SEPARATOR),
+                KEEP_TRAILING_EMPTY_FIELDS);
+        if (parts.length < FIELD_COUNT_MINIMUM) {
+            throw new KiwiException("expected at least " + FIELD_COUNT_MINIMUM
+                    + " fields separated by \"" + Task.SAVE_FIELD_SEPARATOR + "\"");
         }
 
         String type = parts[0].trim();
         String doneFlag = parts[1].trim();
         String description = parts[2].trim();
 
-        if (!doneFlag.equals("0") && !doneFlag.equals("1")) {
-            throw new KiwiException("done flag must be 0 or 1, found \"" + doneFlag + "\"");
+        if (!doneFlag.equals(Task.SAVE_NOT_DONE_FLAG) && !doneFlag.equals(Task.SAVE_DONE_FLAG)) {
+            throw new KiwiException("done flag must be " + Task.SAVE_NOT_DONE_FLAG + " or "
+                    + Task.SAVE_DONE_FLAG + ", found \"" + doneFlag + "\"");
         }
         if (description.isEmpty()) {
             throw new KiwiException("description cannot be empty");
         }
 
-        boolean isDone = doneFlag.equals("1");
+        boolean isDone = doneFlag.equals(Task.SAVE_DONE_FLAG);
         Task task;
         switch (type) {
             case "T":
-                if (parts.length != 3) {
+                if (parts.length != FIELD_COUNT_TODO) {
                     throw new KiwiException("todo lines must look like: T | 0 | description");
                 }
                 task = new Todo(description);
                 break;
             case "D":
-                if (parts.length != 4) {
+                if (parts.length != FIELD_COUNT_DEADLINE) {
                     throw new KiwiException(
                             "deadline lines must look like: D | 0 | description | yyyy-MM-dd");
                 }
@@ -175,7 +186,7 @@ public class Storage {
                 task = new Deadline(description, KiwiDate.parse(by));
                 break;
             case "E":
-                if (parts.length != 5) {
+                if (parts.length != FIELD_COUNT_EVENT) {
                     throw new KiwiException(
                             "event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd");
                 }

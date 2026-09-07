@@ -18,6 +18,7 @@ public class OnCommand extends Command {
      * @param date date to filter by.
      */
     public OnCommand(LocalDate date) {
+        assert date != null : "Parser already parsed the on-command date";
         this.date = date;
     }
 

@@ -16,6 +16,7 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDate by) {
         super(description, TaskType.DEADLINE);
+        assert by != null : "Deadline date should already be parsed";
         this.by = by;
     }
 

@@ -15,7 +15,7 @@ runs each test case against the program, shows the console session, and
 - **Hard-disk file:** `./data/kiwi.txt` — loaded at startup; rewritten (via temp file + replace) whenever the list changes. Missing/unreadable save → empty list with a message. Corrupted lines are skipped with a warning; valid lines still load.
 - **Deadline/event dates:** accepted/stored as `yyyy-MM-dd`, shown as `MMM dd yyyy`. Command `on yyyy-MM-dd` lists deadlines due that day and events whose range covers it.
 - **Find:** `find KEYWORD` lists tasks whose description contains the keyword (case-sensitive substring). Matching tasks are numbered from 1 in the result; no matches prints `None found.`
-- **How tests are run:** compile all `*.java` under the source directory (recursively, for packages), then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin, and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | 2019-10-04 | 2019-10-11`.
+- **How tests are run:** compile all `*.java` under the source directory (recursively, for packages), then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin with Java assertions enabled (`-ea`), and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | 2019-10-04 | 2019-10-11`.
 
 Suggested command (used by the skill runner):
 

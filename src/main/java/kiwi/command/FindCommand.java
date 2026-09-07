@@ -14,6 +14,8 @@ public class FindCommand extends Command {
      * @param keyword case-sensitive substring to search for in descriptions
      */
     public FindCommand(String keyword) {
+        assert keyword != null && !keyword.isEmpty()
+                : "Parser already rejects a missing find keyword";
         this.keyword = keyword;
     }
 

@@ -30,6 +30,7 @@ public class Storage {
      * @param filePath path to the save file, e.g. {@code ./data/kiwi.txt}.
      */
     public Storage(String filePath) {
+        assert filePath != null && !filePath.isEmpty() : "Kiwi always supplies a save-file path";
         this.filePath = filePath;
         this.savePath = Path.of(filePath);
         Path parent = savePath.getParent();
@@ -44,6 +45,7 @@ public class Storage {
      * @param tasks current in-memory task list.
      */
     public void save(ArrayList<Task> tasks) {
+        assert tasks != null : "TaskList.getTasks() always returns the backing list";
         try {
             if (Files.exists(savePath) && Files.isDirectory(savePath)) {
                 System.out.println("Could not save tasks: " + filePath
@@ -134,6 +136,7 @@ public class Storage {
      * @throws KiwiException If the line is malformed.
      */
     private static Task parseLine(String line) throws KiwiException {
+        assert line != null && !line.isBlank() : "load() skips blank lines before parseLine";
         // Keep empty trailing fields so "D | 0 | go | " is detected as incomplete.
         String[] parts = line.split(" \\| ", -1);
         if (parts.length < 3) {
@@ -187,6 +190,7 @@ public class Storage {
                 throw new KiwiException("unknown task type \"" + type + "\"");
         }
 
+        assert task != null : "Every recognized save-file type produces a Task";
         if (isDone) {
             task.markAsDone();
         }

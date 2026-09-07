@@ -124,7 +124,7 @@ def compile_program(root: Path, source_dir: str, out_dir: Path, main_class: str)
 
 def run_program(root: Path, classpath: Path, main_class: str, stdin_text: str) -> str:
     result = subprocess.run(
-        ["java", "-cp", str(classpath), main_class],
+        ["java", "-ea", "-cp", str(classpath), main_class],
         cwd=root,
         input=normalize(stdin_text),
         capture_output=True,

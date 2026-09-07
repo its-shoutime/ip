@@ -30,6 +30,7 @@ public class MarkCommand extends Command {
         if (!tasks.isValidIndex(index)) {
             throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
         }
+        assert tasks.isValidIndex(index) : "Index is in range after the user-input check";
         tasks.markDone(index);
         storage.save(tasks.getTasks());
         ui.showMarked(index + 1, tasks.get(index));

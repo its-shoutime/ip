@@ -21,9 +21,12 @@ public class Event extends Task {
      */
     public Event(String description, LocalDate from, LocalDate to) throws KiwiException {
         super(description, TaskType.EVENT);
+        assert from != null : "Event start date should already be parsed";
+        assert to != null : "Event end date should already be parsed";
         if (to.isBefore(from)) {
             throw new KiwiException("Event end date cannot be before the start date.");
         }
+        assert !to.isBefore(from) : "Validated event range is from <= to";
         this.from = from;
         this.to = to;
     }

@@ -30,6 +30,7 @@ public class Parser {
      * @throws KiwiException If the command is unknown or its arguments are invalid.
      */
     public static Command parse(String input) throws KiwiException {
+        assert input != null : "Ui and GUI always pass a command line, never null";
         if (input.equals("bye")) {
             return new ExitCommand();
         } else if (input.equals("list")) {
@@ -73,6 +74,7 @@ public class Parser {
         if (description.isEmpty()) {
             throw new KiwiException("A todo needs a description — try: todo borrow book");
         }
+        assert !description.isEmpty() : "Todo description is non-empty after the user-input check";
         return new Todo(description);
     }
 
@@ -94,6 +96,7 @@ public class Parser {
                     "Deadlines need both a description and /by yyyy-MM-dd — "
                             + "e.g. deadline return book /by 2019-12-02");
         }
+        assert parts.length == 2 : "Deadline body has description and /by after validation";
         return new Deadline(parts[0].trim(), KiwiDate.parse(parts[1].trim()));
     }
 
@@ -115,12 +118,14 @@ public class Parser {
                     "Events need /from and /to as yyyy-MM-dd — "
                             + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
         }
+        assert fromSplit.length == 2 : "Event body has description and /from after validation";
         String[] toSplit = fromSplit[1].split(" /to ", 2);
         if (toSplit.length < 2 || toSplit[0].trim().isEmpty() || toSplit[1].trim().isEmpty()) {
             throw new KiwiException(
                     "Events need /from and /to as yyyy-MM-dd — "
                             + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
         }
+        assert toSplit.length == 2 : "Event body has /from and /to after validation";
         LocalDate from = KiwiDate.parse(toSplit[0].trim());
         LocalDate to = KiwiDate.parse(toSplit[1].trim());
         return new Event(fromSplit[0].trim(), from, to);
@@ -137,6 +142,7 @@ public class Parser {
         if (keyword.isEmpty()) {
             throw new KiwiException("Please give a keyword to search for, e.g. find book");
         }
+        assert !keyword.isEmpty() : "Find keyword is non-empty after the user-input check";
         return keyword;
     }
 
@@ -151,6 +157,7 @@ public class Parser {
         if (dateText.isEmpty()) {
             throw new KiwiException("Please give a date, e.g. on 2019-12-02");
         }
+        assert !dateText.isEmpty() : "On-command date text is present after the user-input check";
         return KiwiDate.parse(dateText);
     }
 
@@ -168,6 +175,7 @@ public class Parser {
         if (parts.length < 2) {
             throw new KiwiException("Please give a task number, e.g. " + command + " 1");
         }
+        assert parts.length >= 2 : "Task-number token exists after the missing-argument check";
         try {
             return Integer.parseInt(parts[1]) - 1;
         } catch (NumberFormatException e) {

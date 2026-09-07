@@ -20,6 +20,7 @@ public class TaskList {
      * @param tasks tasks to manage; must not be {@code null}.
      */
     public TaskList(ArrayList<Task> tasks) {
+        assert tasks != null : "Storage.load() and callers always pass a list, never null";
         this.tasks = tasks;
     }
 
@@ -29,7 +30,9 @@ public class TaskList {
      * @param tasksToAdd tasks to add.
      */
     public void add(Task... tasksToAdd) {
+        assert tasksToAdd != null : "Vararg add is called with task objects from Parser";
         for (Task task : tasksToAdd) {
+            assert task != null : "A parsed or loaded task is never null";
             tasks.add(task);
         }
     }
@@ -41,6 +44,7 @@ public class TaskList {
      * @return the removed task.
      */
     public Task delete(int index) {
+        assert isValidIndex(index) : "Callers must check isValidIndex before delete";
         return tasks.remove(index);
     }
 
@@ -51,6 +55,7 @@ public class TaskList {
      * @return the task at that position.
      */
     public Task get(int index) {
+        assert isValidIndex(index) : "Callers must check isValidIndex, or loop 0..size-1";
         return tasks.get(index);
     }
 
@@ -78,6 +83,7 @@ public class TaskList {
      * @param index 0-based position.
      */
     public void markDone(int index) {
+        assert isValidIndex(index) : "Callers must check isValidIndex before markDone";
         tasks.get(index).markAsDone();
     }
 
@@ -87,6 +93,7 @@ public class TaskList {
      * @param index 0-based position.
      */
     public void markNotDone(int index) {
+        assert isValidIndex(index) : "Callers must check isValidIndex before markNotDone";
         tasks.get(index).markAsNotDone();
     }
 
@@ -108,6 +115,7 @@ public class TaskList {
      * @return matching tasks, in the same order as this list
      */
     public TaskList find(String keyword) {
+        assert keyword != null : "Parser already validates the find keyword";
         ArrayList<Task> matches = new ArrayList<>();
         for (Task task : tasks) {
             if (task.getDescription().contains(keyword)) {

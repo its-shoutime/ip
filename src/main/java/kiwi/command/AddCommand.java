@@ -17,6 +17,7 @@ public class AddCommand extends Command {
      * @param task the task to add (already parsed).
      */
     public AddCommand(Task task) {
+        assert task != null : "Parser always builds a Task before wrapping it in AddCommand";
         this.task = task;
     }
 

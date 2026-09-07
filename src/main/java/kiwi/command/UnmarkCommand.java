@@ -30,6 +30,7 @@ public class UnmarkCommand extends Command {
         if (!tasks.isValidIndex(index)) {
             throw new KiwiException("There is no task number " + (index + 1) + " in your list.");
         }
+        assert tasks.isValidIndex(index) : "Index is in range after the user-input check";
         tasks.markNotDone(index);
         storage.save(tasks.getTasks());
         ui.showUnmarked(index + 1, tasks.get(index));

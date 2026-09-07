@@ -31,6 +31,7 @@ public final class KiwiDate {
      * @throws KiwiException If the text is not a valid ISO local date.
      */
     public static LocalDate parse(String text) throws KiwiException {
+        assert text != null : "Parser and Storage always pass a date string";
         try {
             return LocalDate.parse(text.trim(), INPUT_FORMAT);
         } catch (DateTimeParseException e) {
@@ -45,6 +46,7 @@ public final class KiwiDate {
      * @return formatted text.
      */
     public static String format(LocalDate date) {
+        assert date != null : "Formatting is only called with dates stored on tasks";
         return date.format(OUTPUT_FORMAT);
     }
 }

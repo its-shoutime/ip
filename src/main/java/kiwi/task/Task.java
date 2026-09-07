@@ -18,6 +18,8 @@ public class Task {
      * @param type whether this is a to-do, deadline, or event.
      */
     public Task(String description, TaskType type) {
+        assert description != null : "Parser and Storage always supply a description";
+        assert type != null : "Subclasses always pass a TaskType";
         this.description = description;
         this.type = type;
         this.isDone = false;

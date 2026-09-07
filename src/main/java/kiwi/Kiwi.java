@@ -36,14 +36,14 @@ public class Kiwi {
      */
     public void run() {
         ui.showWelcome();
-        boolean isExit = false;
-        while (!isExit) {
+        boolean shouldExit = false;
+        while (!shouldExit) {
             try {
                 String fullCommand = ui.readCommand();
                 ui.showLine();
                 Command command = Parser.parse(fullCommand);
                 command.execute(tasks, ui, storage);
-                isExit = command.isExit();
+                shouldExit = command.isExit();
             } catch (KiwiException e) {
                 ui.showError(e.getMessage());
             } finally {

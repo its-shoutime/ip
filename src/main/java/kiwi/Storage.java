@@ -13,6 +13,7 @@ import kiwi.task.Deadline;
 import kiwi.task.Event;
 import kiwi.task.KiwiDate;
 import kiwi.task.Task;
+import kiwi.task.TaskType;
 import kiwi.task.Todo;
 
 /**
@@ -166,15 +167,16 @@ public class Storage {
         }
 
         boolean isDone = doneFlag.equals(Task.SAVE_DONE_FLAG);
+        TaskType taskType = TaskType.fromIcon(type);
         Task task;
-        switch (type) {
-            case "T":
+        switch (taskType) {
+            case TODO:
                 if (parts.length != FIELD_COUNT_TODO) {
                     throw new KiwiException("todo lines must look like: T | 0 | description");
                 }
                 task = new Todo(description);
                 break;
-            case "D":
+            case DEADLINE:
                 if (parts.length != FIELD_COUNT_DEADLINE) {
                     throw new KiwiException(
                             "deadline lines must look like: D | 0 | description | yyyy-MM-dd");
@@ -185,7 +187,7 @@ public class Storage {
                 }
                 task = new Deadline(description, KiwiDate.parse(by));
                 break;
-            case "E":
+            case EVENT:
                 if (parts.length != FIELD_COUNT_EVENT) {
                     throw new KiwiException(
                             "event lines must look like: E | 0 | description | yyyy-MM-dd | yyyy-MM-dd");

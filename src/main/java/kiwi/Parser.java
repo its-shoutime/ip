@@ -32,6 +32,14 @@ public class Parser {
     private static final String COMMAND_UNMARK = "unmark";
     private static final String COMMAND_DELETE = "delete";
 
+    private static final String DELIMITER_BY = " /by ";
+    private static final String DELIMITER_FROM = " /from ";
+    private static final String DELIMITER_TO = " /to ";
+
+    private static final String EVENT_USAGE =
+            "Events need /from and /to as yyyy-MM-dd — "
+                    + "e.g. event meeting /from 2019-10-04 /to 2019-10-11";
+
     /**
      * Parses one full input line into a {@link Command}.
      *
@@ -120,14 +128,19 @@ public class Parser {
             throw new KiwiException(
                     "A deadline needs details — try: deadline return book /by 2019-12-02");
         }
-        String[] parts = body.split(" /by ", 2);
-        if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+        String[] parts = body.split(DELIMITER_BY, 2);
+        boolean hasBySeparator = parts.length == 2;
+        boolean hasDescription = hasBySeparator && !parts[0].trim().isEmpty();
+        boolean hasByDate = hasBySeparator && !parts[1].trim().isEmpty();
+        if (!hasDescription || !hasByDate) {
             throw new KiwiException(
                     "Deadlines need both a description and /by yyyy-MM-dd — "
                             + "e.g. deadline return book /by 2019-12-02");
         }
         assert parts.length == 2 : "Deadline body has description and /by after validation";
-        return new Deadline(parts[0].trim(), KiwiDate.parse(parts[1].trim()));
+        String description = parts[0].trim();
+        String byText = parts[1].trim();
+        return new Deadline(description, KiwiDate.parse(byText));
     }
 
     /**
@@ -142,23 +155,25 @@ public class Parser {
             throw new KiwiException(
                     "An event needs details — try: event meeting /from 2019-10-04 /to 2019-10-11");
         }
-        String[] fromSplit = body.split(" /from ", 2);
-        if (fromSplit.length < 2 || fromSplit[0].trim().isEmpty()) {
-            throw new KiwiException(
-                    "Events need /from and /to as yyyy-MM-dd — "
-                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
+        String[] fromSplit = body.split(DELIMITER_FROM, 2);
+        boolean hasFromSeparator = fromSplit.length == 2;
+        boolean hasDescription = hasFromSeparator && !fromSplit[0].trim().isEmpty();
+        if (!hasDescription) {
+            throw new KiwiException(EVENT_USAGE);
         }
         assert fromSplit.length == 2 : "Event body has description and /from after validation";
-        String[] toSplit = fromSplit[1].split(" /to ", 2);
-        if (toSplit.length < 2 || toSplit[0].trim().isEmpty() || toSplit[1].trim().isEmpty()) {
-            throw new KiwiException(
-                    "Events need /from and /to as yyyy-MM-dd — "
-                            + "e.g. event meeting /from 2019-10-04 /to 2019-10-11");
+        String[] toSplit = fromSplit[1].split(DELIMITER_TO, 2);
+        boolean hasToSeparator = toSplit.length == 2;
+        boolean hasFromDate = hasToSeparator && !toSplit[0].trim().isEmpty();
+        boolean hasToDate = hasToSeparator && !toSplit[1].trim().isEmpty();
+        if (!hasFromDate || !hasToDate) {
+            throw new KiwiException(EVENT_USAGE);
         }
         assert toSplit.length == 2 : "Event body has /from and /to after validation";
+        String description = fromSplit[0].trim();
         LocalDate from = KiwiDate.parse(toSplit[0].trim());
         LocalDate to = KiwiDate.parse(toSplit[1].trim());
-        return new Event(fromSplit[0].trim(), from, to);
+        return new Event(description, from, to);
     }
 
     /**

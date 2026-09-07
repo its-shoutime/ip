@@ -21,6 +21,16 @@ import kiwi.task.Todo;
  * Does not mutate the task list or print messages.
  */
 public class Parser {
+    private static final String COMMAND_BYE = "bye";
+    private static final String COMMAND_LIST = "list";
+    private static final String COMMAND_TODO = "todo";
+    private static final String COMMAND_DEADLINE = "deadline";
+    private static final String COMMAND_EVENT = "event";
+    private static final String COMMAND_ON = "on";
+    private static final String COMMAND_FIND = "find";
+    private static final String COMMAND_MARK = "mark";
+    private static final String COMMAND_UNMARK = "unmark";
+    private static final String COMMAND_DELETE = "delete";
 
     /**
      * Parses one full input line into a {@link Command}.
@@ -31,36 +41,48 @@ public class Parser {
      */
     public static Command parse(String input) throws KiwiException {
         assert input != null : "Ui and GUI always pass a command line, never null";
-        if (input.equals("bye")) {
+        if (isCommand(input, COMMAND_BYE)) {
             return new ExitCommand();
-        } else if (input.equals("list")) {
+        } else if (isCommand(input, COMMAND_LIST)) {
             return new ListCommand();
-        } else if (input.equals("todo") || input.startsWith("todo ")) {
-            String description = input.equals("todo") ? "" : input.substring("todo ".length()).trim();
-            return new AddCommand(parseTodo(description));
-        } else if (input.equals("deadline") || input.startsWith("deadline ")) {
-            String body = input.equals("deadline") ? "" : input.substring("deadline ".length()).trim();
-            return new AddCommand(parseDeadline(body));
-        } else if (input.equals("event") || input.startsWith("event ")) {
-            String body = input.equals("event") ? "" : input.substring("event ".length()).trim();
-            return new AddCommand(parseEvent(body));
-        } else if (input.equals("on") || input.startsWith("on ")) {
-            String dateText = input.equals("on") ? "" : input.substring("on ".length()).trim();
-            return new OnCommand(parseOnDate(dateText));
-        } else if (input.equals("find") || input.startsWith("find ")) {
-            String keyword = input.equals("find") ? "" : input.substring("find ".length()).trim();
-            return new FindCommand(parseFindKeyword(keyword));
-        } else if (input.equals("mark") || input.startsWith("mark ")) {
-            return new MarkCommand(parseTaskNumber(input, "mark"));
-        } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-            return new UnmarkCommand(parseTaskNumber(input, "unmark"));
-        } else if (input.equals("delete") || input.startsWith("delete ")) {
-            return new DeleteCommand(parseTaskNumber(input, "delete"));
+        } else if (isCommand(input, COMMAND_TODO)) {
+            return new AddCommand(parseTodo(argumentOf(input, COMMAND_TODO)));
+        } else if (isCommand(input, COMMAND_DEADLINE)) {
+            return new AddCommand(parseDeadline(argumentOf(input, COMMAND_DEADLINE)));
+        } else if (isCommand(input, COMMAND_EVENT)) {
+            return new AddCommand(parseEvent(argumentOf(input, COMMAND_EVENT)));
+        } else if (isCommand(input, COMMAND_ON)) {
+            return new OnCommand(parseOnDate(argumentOf(input, COMMAND_ON)));
+        } else if (isCommand(input, COMMAND_FIND)) {
+            return new FindCommand(parseFindKeyword(argumentOf(input, COMMAND_FIND)));
+        } else if (isCommand(input, COMMAND_MARK)) {
+            return new MarkCommand(parseTaskNumber(input, COMMAND_MARK));
+        } else if (isCommand(input, COMMAND_UNMARK)) {
+            return new UnmarkCommand(parseTaskNumber(input, COMMAND_UNMARK));
+        } else if (isCommand(input, COMMAND_DELETE)) {
+            return new DeleteCommand(parseTaskNumber(input, COMMAND_DELETE));
         } else {
             throw new KiwiException(
                     "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
                             + "mark, unmark, delete, or bye.");
         }
+    }
+
+    /**
+     * Returns whether {@code input} is exactly {@code commandWord}, or that word followed by arguments.
+     */
+    private static boolean isCommand(String input, String commandWord) {
+        return input.equals(commandWord) || input.startsWith(commandWord + " ");
+    }
+
+    /**
+     * Returns the trimmed text after {@code commandWord}, or an empty string if there is none.
+     */
+    private static String argumentOf(String input, String commandWord) {
+        if (input.equals(commandWord)) {
+            return "";
+        }
+        return input.substring(commandWord.length() + 1).trim();
     }
 
     /**

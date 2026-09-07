@@ -63,10 +63,9 @@ public class Storage {
             }
             Files.createDirectories(dataDir);
 
-            List<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toSaveFormat());
-            }
+            List<String> lines = tasks.stream()
+                    .map(Task::toSaveFormat)
+                    .toList();
             Files.write(tempPath, lines, StandardCharsets.UTF_8);
             Files.move(tempPath, savePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {

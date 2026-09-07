@@ -222,7 +222,8 @@ public class Parser {
         }
         assert parts.length >= 2 : "Task-number token exists after the missing-argument check";
         try {
-            return Integer.parseInt(parts[1]) - 1;
+            int userNumber = Integer.parseInt(parts[1]);
+            return userNumber - 1;
         } catch (NumberFormatException e) {
             throw new KiwiException("That task number doesn't look like a number: " + parts[1]);
         }

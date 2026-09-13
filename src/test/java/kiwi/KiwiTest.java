@@ -39,7 +39,7 @@ class KiwiTest {
     void getResponse_unknownCommand_returnsErrorMessage() {
         String response = kiwi.getResponse("jump");
         assertEquals(
-                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
+                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, free, list, "
                         + "mark, unmark, delete, or bye.",
                 response);
     }
@@ -57,5 +57,19 @@ class KiwiTest {
         String response = kiwi.getResponse("bye");
         assertEquals("Bye. Hope to see you again soon!", response);
         assertTrue(kiwi.isExit());
+    }
+
+    @Test
+    void getResponse_freeSlot_returnsNearestEventFreeWorkDay() {
+        kiwi.getResponse("event conference /from 2019-12-01 /to 2019-12-03");
+        String response = kiwi.getResponse("free 4 /from 2019-12-01");
+        assertEquals("The nearest 4-hour free slot is on Dec 04 2019, 08:00-12:00.", response);
+    }
+
+    @Test
+    void getResponse_freeSlotWhenFullyBooked_returnsNotFound() {
+        kiwi.getResponse("event long trip /from 2019-01-01 /to 2021-12-31");
+        String response = kiwi.getResponse("free 4 /from 2019-12-01");
+        assertEquals("Couldn't find a 4-hour free slot in the next 365 days.", response);
     }
 }

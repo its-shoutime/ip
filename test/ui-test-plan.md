@@ -15,6 +15,7 @@ runs each test case against the program, shows the console session, and
 - **Hard-disk file:** `./data/kiwi.txt` — loaded at startup; rewritten (via temp file + replace) whenever the list changes. Missing/unreadable save → empty list with a message. Corrupted lines are skipped with a warning; valid lines still load.
 - **Deadline/event dates:** accepted/stored as `yyyy-MM-dd`, shown as `MMM dd yyyy`. Command `on yyyy-MM-dd` lists deadlines due that day and events whose range covers it.
 - **Find:** `find KEYWORD` lists tasks whose description contains the keyword (case-sensitive substring). Matching tasks are numbered from 1 in the result; no matches prints `None found.`
+- **Free time:** `free HOURS` (optionally ` /from yyyy-MM-dd`) finds the nearest work day with that many consecutive free hours. Work day is `08:00-18:00` (10 hours). Only events occupy the calendar (the whole work day for each day in their range); deadlines and to-dos do not. Omitting `/from` starts the search from today. No slot within 365 days prints `Couldn't find a …`.
 - **How tests are run:** compile all `*.java` under the source directory (recursively, for packages), then for each test case reset `./data/kiwi.txt` (delete unless a **Seed file** is given), pipe **Inputs** to stdin with Java assertions enabled (`-ea`), and compare full stdout to **Expected output**. Save-file lines use `|` separators, e.g. `T | 1 | read book`, `D | 0 | return book | 2019-12-02`, `E | 0 | meeting | 2019-10-04 | 2019-10-11`.
 
 Suggested command (used by the skill runner):
@@ -200,7 +201,7 @@ ____________________________________________________________
 A todo needs a description — try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, mark, unmark, delete, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, free, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
@@ -320,7 +321,7 @@ Here are the tasks in your list:
 1.[T][ ] buy milk
 ____________________________________________________________
 ____________________________________________________________
-Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, mark, unmark, delete, or bye.
+Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, free, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
@@ -1074,6 +1075,141 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the matching tasks in your list:
 None found.
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC20: Find the nearest 4-hour free slot
+
+**Aim:** `free 4 /from yyyy-MM-dd` skips days covered by events, ignores deadlines and to-dos, and reports the first work-day slot `08:00-12:00`.
+
+**Inputs:**
+```text
+todo ignore me
+deadline return book /by 2019-12-01
+event conference /from 2019-12-01 /to 2019-12-03
+free 4 /from 2019-12-01
+free 4 /from 2019-11-30
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [T][ ] ignore me
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [D][ ] return book (by: Dec 01 2019)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [E][ ] conference (from: Dec 01 2019 to: Dec 03 2019)
+Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+The nearest 4-hour free slot is on Dec 04 2019, 08:00-12:00.
+____________________________________________________________
+____________________________________________________________
+The nearest 4-hour free slot is on Nov 30 2019, 08:00-12:00.
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC21: Reject invalid free commands
+
+**Aim:** Missing hours, non-numeric or non-positive hours, a slot longer than the work day, and a missing `/from` date are rejected without changing the list.
+
+**Inputs:**
+```text
+free
+free abc
+free 0
+free 11
+free 4 /from
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Please give a number of hours, e.g. free 4
+____________________________________________________________
+____________________________________________________________
+That duration doesn't look like a number: abc
+____________________________________________________________
+____________________________________________________________
+Please give a positive number of hours, e.g. free 4
+____________________________________________________________
+____________________________________________________________
+A free slot must fit in one work day (08:00-18:00, 10 hours).
+____________________________________________________________
+____________________________________________________________
+Please give a start date, e.g. free 4 /from 2019-12-01
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+### TC22: No free slot within 365 days
+
+**Aim:** When events occupy every day in the 365-day search window, `free` says no slot was found.
+
+**Inputs:**
+```text
+event long trip /from 2019-01-01 /to 2021-12-31
+free 4 /from 2019-12-01
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ _  ___          _ 
+| |/ (_)_      _(_)
+| ' /| \ \ /\ / / |
+| . \| |\ V  V /| |
+|_|\_\_| \_/\_/ |_|
+Hello! I'm Kiwi.
+What can I do for you?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+  [E][ ] long trip (from: Jan 01 2019 to: Dec 31 2021)
+Now you have 1 task in the list.
+____________________________________________________________
+____________________________________________________________
+Couldn't find a 4-hour free slot in the next 365 days.
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!

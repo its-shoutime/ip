@@ -1,6 +1,9 @@
 package kiwi.task;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -121,5 +124,37 @@ public class TaskList {
                 .filter(task -> task.getDescription().contains(keyword))
                 .collect(Collectors.toCollection(ArrayList::new));
         return new TaskList(matches);
+    }
+
+    /**
+     * Finds the nearest work day on or after {@code startDate} with {@code hours} free.
+     * Only events occupy the calendar (the whole work day for each day in their range).
+     * Deadlines and to-dos do not block free time.
+     *
+     * @param hours length of the slot; must fit in one work day.
+     * @param startDate first day to consider.
+     * @return the earliest matching slot, or empty if none within {@link FreeSlot#SEARCH_DAYS}.
+     */
+    public Optional<FreeSlot> findNearestFreeSlot(int hours, LocalDate startDate) {
+        assert hours >= 1 && hours <= FreeSlot.WORK_DAY_HOURS
+                : "Parser already rejects hours that do not fit a work day";
+        assert startDate != null : "FreeCommand always supplies a start date";
+        for (int offset = 0; offset < FreeSlot.SEARCH_DAYS; offset++) {
+            LocalDate date = startDate.plusDays(offset);
+            if (!hasEventOn(date)) {
+                LocalTime start = FreeSlot.WORK_DAY_START;
+                LocalTime end = start.plusHours(hours);
+                return Optional.of(new FreeSlot(date, start, end));
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns whether any event occupies {@code date}.
+     */
+    private boolean hasEventOn(LocalDate date) {
+        return tasks.stream()
+                .anyMatch(task -> task.getType() == TaskType.EVENT && task.occursOn(date));
     }
 }

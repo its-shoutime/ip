@@ -7,12 +7,14 @@ import kiwi.command.Command;
 import kiwi.command.DeleteCommand;
 import kiwi.command.ExitCommand;
 import kiwi.command.FindCommand;
+import kiwi.command.FreeCommand;
 import kiwi.command.ListCommand;
 import kiwi.command.MarkCommand;
 import kiwi.command.OnCommand;
 import kiwi.command.UnmarkCommand;
 import kiwi.task.Deadline;
 import kiwi.task.Event;
+import kiwi.task.FreeSlot;
 import kiwi.task.KiwiDate;
 import kiwi.task.Todo;
 
@@ -28,6 +30,7 @@ public class Parser {
     private static final String COMMAND_EVENT = "event";
     private static final String COMMAND_ON = "on";
     private static final String COMMAND_FIND = "find";
+    private static final String COMMAND_FREE = "free";
     private static final String COMMAND_MARK = "mark";
     private static final String COMMAND_UNMARK = "unmark";
     private static final String COMMAND_DELETE = "delete";
@@ -70,6 +73,9 @@ public class Parser {
         if (isCommand(input, COMMAND_FIND)) {
             return new FindCommand(parseFindKeyword(argumentOf(input, COMMAND_FIND)));
         }
+        if (isCommand(input, COMMAND_FREE)) {
+            return parseFree(argumentOf(input, COMMAND_FREE));
+        }
         if (isCommand(input, COMMAND_MARK)) {
             return new MarkCommand(parseTaskNumber(input, COMMAND_MARK));
         }
@@ -80,7 +86,7 @@ public class Parser {
             return new DeleteCommand(parseTaskNumber(input, COMMAND_DELETE));
         }
         throw new KiwiException(
-                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
+                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, free, list, "
                         + "mark, unmark, delete, or bye.");
     }
 
@@ -189,6 +195,65 @@ public class Parser {
         }
         assert !keyword.isEmpty() : "Find keyword is non-empty after the user-input check";
         return keyword;
+    }
+
+    /**
+     * Parses {@code HOURS} or {@code HOURS /from yyyy-MM-dd} into a {@link FreeCommand}.
+     * Omitting {@code /from} means the search starts from today when the command runs.
+     *
+     * @param body text after the {@code free} command.
+     * @return a command that searches for a free slot of that length.
+     * @throws KiwiException If the hours or optional start date are missing or invalid.
+     */
+    private static FreeCommand parseFree(String body) throws KiwiException {
+        if (body.isEmpty()) {
+            throw new KiwiException("Please give a number of hours, e.g. free 4");
+        }
+        // "free 4 /from" trims to this; the usual " /from " delimiter needs a trailing space.
+        if (body.endsWith(" /from") || body.equals("/from")) {
+            throw new KiwiException("Please give a start date, e.g. free 4 /from 2019-12-01");
+        }
+        String[] fromSplit = body.split(DELIMITER_FROM, 2);
+        String hoursText = fromSplit[0].trim();
+        LocalDate startDate = null;
+        if (fromSplit.length == 2) {
+            String dateText = fromSplit[1].trim();
+            if (dateText.isEmpty()) {
+                throw new KiwiException("Please give a start date, e.g. free 4 /from 2019-12-01");
+            }
+            assert !dateText.isEmpty() : "Free /from date text is present after the user-input check";
+            startDate = KiwiDate.parse(dateText);
+        }
+        int hours = parseFreeHours(hoursText);
+        return new FreeCommand(hours, startDate);
+    }
+
+    /**
+     * Parses a positive hour count that fits in one work day.
+     *
+     * @param hoursText text immediately after {@code free}, before any {@code /from}.
+     * @return the hour count.
+     * @throws KiwiException If the text is not a valid slot length.
+     */
+    private static int parseFreeHours(String hoursText) throws KiwiException {
+        if (hoursText.isEmpty() || hoursText.contains(" ")) {
+            throw new KiwiException("Please give a number of hours, e.g. free 4");
+        }
+        final int hours;
+        try {
+            hours = Integer.parseInt(hoursText);
+        } catch (NumberFormatException e) {
+            throw new KiwiException("That duration doesn't look like a number: " + hoursText);
+        }
+        if (hours < 1) {
+            throw new KiwiException("Please give a positive number of hours, e.g. free 4");
+        }
+        if (hours > FreeSlot.WORK_DAY_HOURS) {
+            throw new KiwiException(
+                    "A free slot must fit in one work day (08:00-18:00, "
+                            + FreeSlot.WORK_DAY_HOURS + " hours).");
+        }
+        return hours;
     }
 
     /**

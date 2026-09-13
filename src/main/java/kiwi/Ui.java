@@ -3,6 +3,7 @@ package kiwi;
 import java.time.LocalDate;
 import java.util.Scanner;
 
+import kiwi.task.FreeSlot;
 import kiwi.task.KiwiDate;
 import kiwi.task.Task;
 import kiwi.task.TaskList;
@@ -151,6 +152,26 @@ public class Ui {
         if (shown == 0) {
             show("None found.");
         }
+    }
+
+    /**
+     * Shows the nearest free slot of {@code hours} hours.
+     *
+     * @param hours length of the requested slot.
+     * @param slot the matching free period.
+     */
+    public void showFreeSlot(int hours, FreeSlot slot) {
+        show("The nearest " + hours + "-hour free slot is on " + slot.toDisplayString() + ".");
+    }
+
+    /**
+     * Shows that no free slot of {@code hours} hours was found in the search window.
+     *
+     * @param hours length of the requested slot.
+     */
+    public void showNoFreeSlot(int hours) {
+        show("Couldn't find a " + hours + "-hour free slot in the next "
+                + FreeSlot.SEARCH_DAYS + " days.");
     }
 
     /**

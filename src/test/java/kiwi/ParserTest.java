@@ -19,6 +19,7 @@ import kiwi.command.Command;
 import kiwi.command.DeleteCommand;
 import kiwi.command.ExitCommand;
 import kiwi.command.FindCommand;
+import kiwi.command.FreeCommand;
 import kiwi.command.ListCommand;
 import kiwi.command.MarkCommand;
 import kiwi.command.OnCommand;
@@ -186,6 +187,54 @@ class ParserTest {
     }
 
     @Nested
+    class FreeCommandParsing {
+
+        @Test
+        void parse_freeHours_returnsFreeCommand() throws KiwiException {
+            assertInstanceOf(FreeCommand.class, Parser.parse("free 4"));
+        }
+
+        @Test
+        void parse_freeHoursWithFromDate_returnsFreeCommand() throws KiwiException {
+            assertInstanceOf(FreeCommand.class, Parser.parse("free 4 /from 2019-12-01"));
+        }
+
+        @Test
+        void parse_freeWithoutHours_throwsKiwiException() {
+            KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("free"));
+            assertEquals("Please give a number of hours, e.g. free 4", exception.getMessage());
+        }
+
+        @Test
+        void parse_freeNonNumericHours_throwsKiwiException() {
+            KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("free abc"));
+            assertEquals("That duration doesn't look like a number: abc", exception.getMessage());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"free 0", "free -1"})
+        void parse_freeNonPositiveHours_throwsKiwiException(String input) {
+            KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse(input));
+            assertEquals("Please give a positive number of hours, e.g. free 4", exception.getMessage());
+        }
+
+        @Test
+        void parse_freeHoursLongerThanWorkDay_throwsKiwiException() {
+            KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("free 11"));
+            assertEquals(
+                    "A free slot must fit in one work day (08:00-18:00, 10 hours).",
+                    exception.getMessage());
+        }
+
+        @Test
+        void parse_freeFromWithoutDate_throwsKiwiException() {
+            KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("free 4 /from"));
+            assertEquals("Please give a start date, e.g. free 4 /from 2019-12-01",
+                    exception.getMessage());
+        }
+    }
+
+    @Nested
     class TaskNumberCommands {
 
         @Test
@@ -245,7 +294,7 @@ class ParserTest {
     void parse_unknownCommand_throwsKiwiException() {
         KiwiException exception = assertThrows(KiwiException.class, () -> Parser.parse("jump"));
         assertEquals(
-                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, list, "
+                "Hmm, Kiwi doesn't recognize that. Try todo, deadline, event, on, find, free, list, "
                         + "mark, unmark, delete, or bye.",
                 exception.getMessage());
     }

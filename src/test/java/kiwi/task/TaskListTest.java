@@ -5,11 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import kiwi.KiwiException;
 
 /**
  * Unit tests for {@link TaskList}.
@@ -120,5 +124,93 @@ class TaskListTest {
         taskList.add(new Todo("Read Book"));
         assertEquals(0, taskList.find("book").size());
         assertEquals(1, taskList.find("Book").size());
+    }
+
+    @Test
+    void findNearestFreeSlot_emptyList_returnsStartDateAtWorkDayStart() {
+        TaskList empty = new TaskList();
+        Optional<FreeSlot> slot = empty.findNearestFreeSlot(4, LocalDate.of(2019, 12, 1));
+
+        assertTrue(slot.isPresent());
+        assertEquals(LocalDate.of(2019, 12, 1), slot.get().getDate());
+        assertEquals(LocalTime.of(8, 0), slot.get().getStart());
+        assertEquals(LocalTime.of(12, 0), slot.get().getEnd());
+    }
+
+    @Test
+    void findNearestFreeSlot_eventCoveringStart_returnsDayAfterEvent() throws KiwiException {
+        TaskList tasks = new TaskList();
+        tasks.add(new Event("conference",
+                LocalDate.of(2019, 12, 1),
+                LocalDate.of(2019, 12, 3)));
+
+        Optional<FreeSlot> slot = tasks.findNearestFreeSlot(4, LocalDate.of(2019, 12, 1));
+
+        assertTrue(slot.isPresent());
+        assertEquals(LocalDate.of(2019, 12, 4), slot.get().getDate());
+    }
+
+    @Test
+    void findNearestFreeSlot_deadlineAndTodoOnStart_doNotBlock() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Deadline("return book", LocalDate.of(2019, 12, 1)));
+        tasks.add(new Todo("read book"));
+
+        Optional<FreeSlot> slot = tasks.findNearestFreeSlot(4, LocalDate.of(2019, 12, 1));
+
+        assertTrue(slot.isPresent());
+        assertEquals(LocalDate.of(2019, 12, 1), slot.get().getDate());
+    }
+
+    @Test
+    void findNearestFreeSlot_gapBetweenEvents_returnsGapDay() throws KiwiException {
+        TaskList tasks = new TaskList();
+        tasks.add(new Event("first",
+                LocalDate.of(2019, 12, 1),
+                LocalDate.of(2019, 12, 2)));
+        tasks.add(new Event("second",
+                LocalDate.of(2019, 12, 4),
+                LocalDate.of(2019, 12, 5)));
+
+        Optional<FreeSlot> slot = tasks.findNearestFreeSlot(4, LocalDate.of(2019, 12, 1));
+
+        assertTrue(slot.isPresent());
+        assertEquals(LocalDate.of(2019, 12, 3), slot.get().getDate());
+    }
+
+    @Test
+    void findNearestFreeSlot_doneEventStillBlocks() throws KiwiException {
+        Event event = new Event("meeting",
+                LocalDate.of(2019, 12, 1),
+                LocalDate.of(2019, 12, 1));
+        event.markAsDone();
+        TaskList tasks = new TaskList();
+        tasks.add(event);
+
+        Optional<FreeSlot> slot = tasks.findNearestFreeSlot(4, LocalDate.of(2019, 12, 1));
+
+        assertTrue(slot.isPresent());
+        assertEquals(LocalDate.of(2019, 12, 2), slot.get().getDate());
+    }
+
+    @Test
+    void findNearestFreeSlot_yearFullyBooked_returnsEmpty() throws KiwiException {
+        TaskList tasks = new TaskList();
+        tasks.add(new Event("long trip",
+                LocalDate.of(2019, 1, 1),
+                LocalDate.of(2021, 12, 31)));
+
+        Optional<FreeSlot> slot = tasks.findNearestFreeSlot(4, LocalDate.of(2019, 12, 1));
+
+        assertTrue(slot.isEmpty());
+    }
+
+    @Test
+    void findNearestFreeSlot_fullWorkDay_endsAtSixPm() {
+        TaskList empty = new TaskList();
+        Optional<FreeSlot> slot = empty.findNearestFreeSlot(10, LocalDate.of(2019, 12, 1));
+
+        assertTrue(slot.isPresent());
+        assertEquals(LocalTime.of(18, 0), slot.get().getEnd());
     }
 }
